@@ -85,6 +85,9 @@ const JsonViewer = ({
   
   // Protobuf data toggle state
   const [showProtobufRaw, setShowProtobufRaw] = useState(false);
+
+  // PartialJson data toggle state
+  const [showPartialJson, setShowPartialJson] = useState(false);
   
   // Check if current message is protobuf
   const isProtobufMessage = message && message.isProtobuf;
@@ -219,6 +222,17 @@ const JsonViewer = ({
     return obj;
   }, []);
 
+  // Try to find and parse a JSON object in text
+  const findValidJson = useCallback((text) => {
+    if (!text) return null;
+    const match = text.match(/{[\s\S]*}/);
+    try {
+      return match && JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }, []);
+
   // Detect and parse JSON
   const {
     isValidJson,
@@ -226,8 +240,8 @@ const JsonViewer = ({
     displayData,
     nestedParsedData,
     hasNestedData,
+    hasPartialJson,
   } = useMemo(() => {
-
     if (!effectiveData || typeof effectiveData !== "string") {
       return {
         isValidJson: false,
@@ -235,13 +249,26 @@ const JsonViewer = ({
         displayData: String(effectiveData || ""),
         nestedParsedData: null,
         hasNestedData: false,
+        hasPartialJson: false,
       };
     }
 
     try {
-      const parsed = JSON.parse(effectiveData);
-      const nestedParsed = parseNestedJson(parsed);
+      // First try to parse the entire string
+      let parsed;
+      let hasPartialJson = false;
+      try {
+        parsed = JSON.parse(effectiveData);
+      } catch {
+        // If full parse fails, try to find valid JSON within the string
+        parsed = findValidJson(effectiveData);
+        if (!parsed) {
+          throw new Error("No valid JSON found");
+        }
+        hasPartialJson = true;
+      }
 
+      const nestedParsed = parseNestedJson(parsed);
       // Check if nested parsing actually found nested JSON using shallow comparison
       const hasNestedData = !deepEqual(parsed, nestedParsed);
 
@@ -251,6 +278,7 @@ const JsonViewer = ({
         displayData: effectiveData,
         nestedParsedData: nestedParsed,
         hasNestedData,
+        hasPartialJson,
       };
     } catch {
       return {
@@ -259,6 +287,7 @@ const JsonViewer = ({
         displayData: effectiveData,
         nestedParsedData: null,
         hasNestedData: false,
+        hasPartialJson: false,
       };
     }
   }, [effectiveData, parseNestedJson, forceUpdate]);
@@ -266,6 +295,11 @@ const JsonViewer = ({
   // Get display content
   const getDisplayContent = () => {
     if (!isValidJson) {
+      return displayData;
+    }
+
+    // If we have partial JSON and showPartialJson is false, show original content
+    if (hasPartialJson && !showPartialJson) {
       return displayData;
     }
 
@@ -481,7 +515,20 @@ const JsonViewer = ({
                 </button>
               </div>
             )}
-            
+
+            {hasPartialJson && (
+              <div className="protobuf-controls">
+                <button
+                  className={`json-viewer-btn btn-wrap ${showPartialJson ? "json-viewer-btn-active-green" : "json-viewer-btn-inactive"}`}
+                  onClick={() => setShowPartialJson(!showPartialJson)}
+                  title="Toggle between JSON and raw data"
+                >
+                  <Hash size={14} />
+                  <span>{t("jsonViewer.status.json")}</span>
+                </button>
+              </div>
+            )}      
+
             {enableWrap && (
               <button
                 onClick={() => {
