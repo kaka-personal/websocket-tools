@@ -4,7 +4,7 @@
 
 ## Overview
 
-WebSocket DevTools is a Chrome extension designed to help developers monitor, debug, and simulate WebSocket connections. We are committed to protecting your privacy and being transparent about our data practices.
+WebSocket DevTools is a browser extension for Google Chrome and Microsoft Edge designed to help developers monitor, debug, and simulate WebSocket connections. We are committed to protecting your privacy and being transparent about our data practices.
 
 ## Data Collection and Processing
 
@@ -22,8 +22,8 @@ WebSocket DevTools is a Chrome extension designed to help developers monitor, de
 - **Connection Data**: Temporarily holds WebSocket connection information during debugging sessions
 
 ### Local Storage Only
-All data processing occurs entirely within your browser using Chrome's local storage APIs:
-- **chrome.storage.local**: For extension settings and preferences
+All data processing occurs entirely within your browser using browser-specific local storage APIs:
+- **chrome.storage.local** (Chrome) / **browser.storage.local** (Edge): For extension settings and preferences
 - **Browser Local Storage**: For temporary debugging data and favorites
 - **No Cloud Storage**: Nothing is synchronized to external servers
 
@@ -37,13 +37,13 @@ All data processing occurs entirely within your browser using Chrome's local sto
 
 ### Favorites System
 - **Purpose**: To save frequently used WebSocket messages for testing
-- **Storage**: Stored locally in your browser using chrome.storage.local
+- **Storage**: Stored locally in your browser using browser storage APIs (chrome.storage.local in Chrome, browser.storage.local in Edge)
 - **Control**: You can view, edit, or delete favorites at any time through the extension interface
 
 ### Settings and Preferences
 - **Purpose**: To remember your extension preferences across sessions
 - **Data**: Language preference, monitoring state, window positions
-- **Storage**: Stored locally using chrome.storage.local
+- **Storage**: Stored locally using browser storage APIs (chrome.storage.local in Chrome, browser.storage.local in Edge)
 - **Control**: You can reset all settings by disabling and re-enabling the extension
 
 ## Permissions and Their Purpose
@@ -76,9 +76,9 @@ All data processing occurs entirely within your browser using Chrome's local sto
 
 ### Local Security
 - All data remains on your device
-- Uses Chrome's secure storage APIs
+- Uses browser's secure storage APIs (Chrome/Edge)
 - No network transmission of debugging data
-- Extension code is minified and validated by Chrome Web Store
+- Extension code is minified and validated by Chrome Web Store and Microsoft Edge Add-ons store
 
 ### Access Control
 - Only you can access your debugging data
