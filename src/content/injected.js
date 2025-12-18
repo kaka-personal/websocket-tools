@@ -395,11 +395,43 @@
     });
   }
 
-  // Send event to content script
+  // Batch processing configuration
+  const BATCH_SIZE_THRESHOLD = 50;
+  const BATCH_TIME_THRESHOLD = 100; // ms
+  let eventBatchQueue = [];
+  let batchTimer = null;
+
+  function flushBatchQueue() {
+    if (eventBatchQueue.length === 0) return;
+
+    const batchToSend = [...eventBatchQueue];
+    eventBatchQueue = [];
+
+    if (batchTimer) {
+      clearTimeout(batchTimer);
+      batchTimer = null;
+    }
+
+    try {
+      window.postMessage(
+        {
+          source: "websocket-proxy-injected",
+          type: "websocket-event-batch",
+          payload: batchToSend,
+        },
+        "*"
+      );
+    } catch (error) {
+      // Silent error
+    }
+  }
+
+  // Send event to content script (buffered)
   function sendEvent(eventData) {
     if(!proxyState.isMonitoring){
       return;
     }
+
     try {
       // Add frame context to event data
       const eventWithFrameContext = {
@@ -411,13 +443,17 @@
         }
       };
       
-      window.postMessage(
-        {
-          source: "websocket-proxy-injected",
-          payload: eventWithFrameContext,
-        },
-        "*"
-      );
+      // Push to queue
+      eventBatchQueue.push(eventWithFrameContext);
+
+      // Check threshold
+      if (eventBatchQueue.length >= BATCH_SIZE_THRESHOLD) {
+        flushBatchQueue();
+      } else if (!batchTimer) {
+        // Start timer if not running
+        batchTimer = setTimeout(flushBatchQueue, BATCH_TIME_THRESHOLD);
+      }
+
     } catch (error) {
     }
   }

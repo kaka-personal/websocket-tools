@@ -57,6 +57,37 @@ window.addEventListener("message", (event) => {
 
   if (event.data.source === "websocket-proxy-injected") {
 
+    // Handle batched events
+    if (event.data.type === "websocket-event-batch") {
+      const batch = event.data.payload;
+      if (!batch || !Array.isArray(batch)) return;
+
+      const batchWithIds = batch.map(item => {
+        // Generate ID if missing (should be present for messages, but safe to add)
+        // Also ensure timestamp and source are correct
+        return {
+          ...item,
+          messageId: item.messageId || generateMessageId(),
+          timestamp: item.timestamp || Date.now(),
+          source: "content-script", // Retag source for background
+        };
+      });
+
+      // Send batch to Background Script
+      chrome.runtime
+        .sendMessage({
+          type: "websocket-event-batch",
+          data: batchWithIds,
+          timestamp: Date.now(),
+          source: "content-script"
+        })
+        .catch(() => {
+           // Ignore errors
+        });
+
+      return;
+    }
+
     // Handle keep-alive messages
     if (event.data.type === "keep-alive") {
       // Just acknowledge to keep connection alive

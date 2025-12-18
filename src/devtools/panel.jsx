@@ -138,7 +138,97 @@ const WebSocketPanel = () => {
       // Check if sendResponse is available (runtime message) or not (port message)
       const hasSendResponse = typeof sendResponse === 'function';
       
-      if (message.type === "websocket-event") {
+      // Handle batched events
+      if (message.type === "websocket-event-batch") {
+        const batchEvents = message.data;
+        if (!batchEvents || !Array.isArray(batchEvents)) return;
+
+        // Filter valid events for current tab
+        const validEvents = batchEvents.filter(eventData => {
+          if (eventData.tabId !== tabId) return false;
+
+          // Deduplication
+          if (eventData.messageId && processedMessageIds.current.has(eventData.messageId)) {
+            return false;
+          }
+
+          if (eventData.messageId) {
+            processedMessageIds.current.add(eventData.messageId);
+          }
+
+          return true;
+        });
+
+        if (validEvents.length === 0) return;
+
+        // Batch update connection info
+        setConnectionsMap((prevConnections) => {
+          const newConnections = new Map(prevConnections);
+          const hadConnections = prevConnections.size > 0;
+          let newConnectionIdToSelect = null;
+
+          validEvents.forEach(eventData => {
+            // Handle manual connection creation success event
+            if (eventData.type === "manual-connection-created") {
+               newConnectionIdToSelect = eventData.connectionId;
+            }
+
+            if (eventData.type === "connection" || eventData.type === "open") {
+              // Create or update connection to active status
+              newConnections.set(eventData.id, {
+                id: eventData.id,
+                url: eventData.url,
+                status: eventData.type === "connection" ? "connecting" : "open",
+                timestamp: eventData.timestamp,
+                lastActivity: eventData.timestamp,
+                frameContext: eventData.frameContext,
+              });
+
+              // Auto-select logic
+              if (!hadConnections && newConnections.size === 1) {
+                newConnectionIdToSelect = eventData.id;
+              }
+            } else if (eventData.type === "close" || eventData.type === "error") {
+              // Update connection to inactive status
+              const existing = newConnections.get(eventData.id);
+              newConnections.set(eventData.id, {
+                id: eventData.id,
+                url: existing?.url || eventData.url || "Unknown URL",
+                status: eventData.type,
+                timestamp: existing?.timestamp || eventData.timestamp,
+                lastActivity: eventData.timestamp,
+                frameContext: existing?.frameContext || eventData.frameContext,
+              });
+            } else if (eventData.type === "message") {
+              // Update last activity
+              const existing = newConnections.get(eventData.id);
+              if (existing) {
+                newConnections.set(eventData.id, {
+                  ...existing,
+                  lastActivity: eventData.timestamp,
+                  frameContext: existing.frameContext || eventData.frameContext,
+                });
+              }
+            }
+          });
+
+          // Handle delayed selection
+          if (newConnectionIdToSelect) {
+            setTimeout(() => {
+              setSelectedConnectionId(newConnectionIdToSelect);
+            }, 100);
+          }
+
+          return newConnections;
+        });
+
+        // Batch update events list
+        setWebsocketEvents((prevEvents) => {
+          // Optimized: push all at once
+          return [...prevEvents, ...validEvents];
+        });
+
+      } else if (message.type === "websocket-event") {
         const eventData = message.data;
         const messageId = message.messageId;
 
