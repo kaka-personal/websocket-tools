@@ -240,11 +240,46 @@
       else if (typeof data === 'string') size = data.length;
 
       if (size > MAX_PREVIEW_SIZE) {
+        // Truncate data for preview instead of hiding it completely
+        let truncatedData;
+
+        // Create a truncated copy of the data
+        if (data instanceof ArrayBuffer) {
+          truncatedData = new Uint8Array(data, 0, MAX_PREVIEW_SIZE);
+        } else if (data instanceof Uint8Array) {
+          truncatedData = data.subarray(0, MAX_PREVIEW_SIZE);
+        } else if (typeof data === 'string') {
+          truncatedData = data.substring(0, MAX_PREVIEW_SIZE);
+        } else if (data instanceof Blob) {
+           // For Blob, we can't easily sync slice in this context without FileReader
+           // So we keep the previous behavior for Blobs or just show size
+            return {
+              isProtobuf: true,
+              protobufDecoded: { error: `Blob data too large to preview (${size} bytes)` },
+              protobufRaw: `[Blob ${size} bytes - Preview hidden for performance]`,
+              protobufError: null
+            };
+        } else {
+           // Fallback for other types
+           return {
+              isProtobuf: true,
+              protobufDecoded: { error: `Data too large to preview (${size} bytes)` },
+              protobufRaw: `[Data ${size} bytes - Preview hidden for performance]`,
+              protobufError: null
+           };
+        }
+
+        // Try to decode the truncated data (might fail or show partial data, which is fine)
+        const decodeResult = tryDecodeAsProtobuf(truncatedData);
+
         return {
           isProtobuf: true,
-          protobufDecoded: { error: `Data too large to preview (${size} bytes)` },
-          protobufRaw: `[Binary data ${size} bytes - Preview hidden for performance]`,
-          protobufError: null
+          protobufDecoded: {
+            warning: `Data truncated for performance (Total: ${size} bytes). Showing first ${MAX_PREVIEW_SIZE} bytes.`,
+            partialDecode: decodeResult.decoded
+          },
+          protobufRaw: decodeResult.raw + ` ... [Truncated, total ${size} bytes]`,
+          protobufError: decodeResult.error
         };
       }
 
