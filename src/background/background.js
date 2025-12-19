@@ -88,7 +88,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (tabId) {
         notifyAllTabs("start-monitoring", {}, tabId);
       }
-      // websocketData.isMonitoring = true;
+      websocketData.isMonitoring = true;
       sendResponse({ success: true, monitoring: true });
       break;
     }
@@ -97,7 +97,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (tabId) {
         notifyAllTabs("stop-monitoring", {}, tabId);
       }
-      // websocketData.isMonitoring = false;
+      websocketData.isMonitoring = false;
       sendResponse({ success: true, monitoring: false });
       break;
     }
@@ -138,6 +138,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Add tabId to event data
       message.data.tabId = sender.tab.id;
       message.tabId = sender.tab.id;
+
+      // Handle circuit breaker - update monitoring state
+      if (message.data.type === "circuit-breaker-triggered") {
+        console.warn(`[WebSocket Proxy Background] Circuit breaker triggered: ${message.data.messagesPerSecond} msg/s`);
+        websocketData.isMonitoring = false;
+      }
 
       // Store connection data
       websocketData.connections.push(message.data);
@@ -220,6 +226,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ success: false, error: error.message });
         });
       } else {
+        sendResponse({ success: false, error: "No tabId specified" });
+      }
+      break;
+    }
+
+    case "resume-traffic-monitoring": {
+      // Resume traffic monitoring after pause
+      const resumeTabId = message.tabId;
+      console.log("[WebSocket Proxy BG] Resume request received, tabId:", resumeTabId);
+      if (resumeTabId) {
+        chrome.tabs.sendMessage(resumeTabId, {
+          type: "resume-traffic-monitoring",
+        }).then((response) => {
+          console.log("[WebSocket Proxy BG] Resume forwarded to content, response:", response);
+          sendResponse({ success: true });
+        }).catch((error) => {
+          console.error("[WebSocket Proxy BG] Resume forward failed:", error);
+          sendResponse({ success: false, error: error.message });
+        });
+      } else {
+        console.error("[WebSocket Proxy BG] No tabId specified");
         sendResponse({ success: false, error: "No tabId specified" });
       }
       break;

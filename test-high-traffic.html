@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket High Traffic Test</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #10b981;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+    .card h2 {
+      color: #fbbf24;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .btn-connect {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    .btn-disconnect {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+    }
+    .btn-send {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+    }
+    .btn-flood {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #1a1a2e;
+    }
+    .btn-stop {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      color: white;
+    }
+    input, select {
+      padding: 10px 15px;
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #10b981;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .status.connected {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+    .status.disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .status.connected .status-dot {
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+    .status.disconnected .status-dot {
+      background: #ef4444;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .stat-item {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #10b981;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 5px;
+    }
+    .log-container {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 8px;
+      padding: 15px;
+      height: 200px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+    }
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+    }
+    .log-entry.sent {
+      color: #3b82f6;
+    }
+    .log-entry.received {
+      color: #10b981;
+    }
+    .log-entry.error {
+      color: #ef4444;
+    }
+    .log-entry.info {
+      color: #fbbf24;
+    }
+    .flood-settings {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .flood-settings label {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .flood-settings input {
+      width: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WebSocket High Traffic Test</h1>
+
+    <div class="card">
+      <h2>Connection</h2>
+      <div class="controls">
+        <input type="text" id="wsUrl" value="wss://echo.websocket.org" style="flex: 1; min-width: 200px;">
+        <button class="btn-connect" id="connectBtn" onclick="connect()">Connect</button>
+        <button class="btn-disconnect" id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+      </div>
+      <div class="status disconnected" id="statusBar">
+        <span class="status-dot"></span>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Statistics</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="msgSent">0</div>
+          <div class="stat-label">Messages Sent</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="msgReceived">0</div>
+          <div class="stat-label">Messages Received</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="msgPerSec">0</div>
+          <div class="stat-label">Messages/sec</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="floodStatus">Idle</div>
+          <div class="stat-label">Flood Status</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Send Message</h2>
+      <div class="controls">
+        <input type="text" id="messageInput" placeholder="Enter message..." style="flex: 1;">
+        <button class="btn-send" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>High Traffic Flood Test</h2>
+      <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">
+        Simulate high-traffic scenarios like Figma. This will send messages rapidly to test the traffic pause feature.
+      </p>
+      <div class="flood-settings">
+        <label>Messages/sec:</label>
+        <input type="number" id="floodRate" value="100" min="1" max="2000">
+        <label>Duration (sec):</label>
+        <input type="number" id="floodDuration" value="10" min="1" max="60">
+        <button class="btn-flood" id="floodBtn" onclick="startFlood()">Start Flood</button>
+        <button class="btn-stop" id="stopFloodBtn" onclick="stopFlood()" disabled>Stop</button>
+      </div>
+      <div style="margin-top: 15px;">
+        <label style="color: #94a3b8; font-size: 13px;">Quick presets:</label>
+        <div class="controls" style="margin-top: 8px;">
+          <button class="btn-send" onclick="setFloodPreset(50, 5)">Low (50/s)</button>
+          <button class="btn-send" onclick="setFloodPreset(200, 5)">Medium (200/s)</button>
+          <button class="btn-flood" onclick="setFloodPreset(500, 5)">High (500/s)</button>
+          <button class="btn-disconnect" onclick="setFloodPreset(1000, 5)">Extreme (1000/s)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Message Log</h2>
+      <div class="log-container" id="logContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let floodInterval = null;
+    let floodTimeout = null;
+    let msgSentCount = 0;
+    let msgReceivedCount = 0;
+    let msgPerSecCount = 0;
+    let lastSecondCount = 0;
+
+    // Update messages per second every second
+    setInterval(() => {
+      msgPerSecCount = msgReceivedCount - lastSecondCount;
+      lastSecondCount = msgReceivedCount;
+      document.getElementById('msgPerSec').textContent = msgPerSecCount;
+    }, 1000);
+
+    function log(message, type = 'info') {
+      const container = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const time = new Date().toLocaleTimeString();
+      entry.textContent = `[${time}] ${message}`;
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+
+      // Limit log entries
+      while (container.children.length > 100) {
+        container.removeChild(container.firstChild);
+      }
+    }
+
+    function updateStatus(connected) {
+      const statusBar = document.getElementById('statusBar');
+      const statusText = document.getElementById('statusText');
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+
+      if (connected) {
+        statusBar.className = 'status connected';
+        statusText.textContent = 'Connected';
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+      } else {
+        statusBar.className = 'status disconnected';
+        statusText.textContent = 'Disconnected';
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('msgSent').textContent = msgSentCount;
+      document.getElementById('msgReceived').textContent = msgReceivedCount;
+    }
+
+    function connect() {
+      const url = document.getElementById('wsUrl').value;
+      log(`Connecting to ${url}...`, 'info');
+
+      try {
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+          log('Connected successfully!', 'info');
+          updateStatus(true);
+        };
+
+        ws.onmessage = (event) => {
+          msgReceivedCount++;
+          updateStats();
+          // Only log first 50 and then every 100th message to prevent log spam
+          if (msgReceivedCount <= 50 || msgReceivedCount % 100 === 0) {
+            const preview = event.data.length > 50 ? event.data.substring(0, 50) + '...' : event.data;
+            log(`Received (#${msgReceivedCount}): ${preview}`, 'received');
+          }
+        };
+
+        ws.onerror = (error) => {
+          log('WebSocket error occurred', 'error');
+        };
+
+        ws.onclose = (event) => {
+          log(`Connection closed (code: ${event.code}, reason: ${event.reason || 'none'})`, 'info');
+          updateStatus(false);
+          stopFlood();
+        };
+      } catch (error) {
+        log(`Connection failed: ${error.message}`, 'error');
+      }
+    }
+
+    function disconnect() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      stopFlood();
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+
+      if (!message) return;
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log('Not connected!', 'error');
+        return;
+      }
+
+      ws.send(message);
+      msgSentCount++;
+      updateStats();
+      log(`Sent: ${message}`, 'sent');
+      input.value = '';
+    }
+
+    function setFloodPreset(rate, duration) {
+      document.getElementById('floodRate').value = rate;
+      document.getElementById('floodDuration').value = duration;
+    }
+
+    function startFlood() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log('Not connected! Connect first.', 'error');
+        return;
+      }
+
+      const rate = parseInt(document.getElementById('floodRate').value);
+      const duration = parseInt(document.getElementById('floodDuration').value);
+
+      log(`Starting flood: ${rate} msg/s for ${duration}s`, 'info');
+      document.getElementById('floodStatus').textContent = 'Running';
+      document.getElementById('floodBtn').disabled = true;
+      document.getElementById('stopFloodBtn').disabled = false;
+
+      let msgCount = 0;
+      const startTime = Date.now();
+      const endTime = startTime + duration * 1000;
+
+      // Use a more aggressive approach for high rates
+      // setInterval has ~4ms minimum in browsers, so max ~250/s
+      // For higher rates, we send multiple messages per interval
+
+      const msgsPerTick = Math.max(1, Math.ceil(rate / 250)); // messages per 4ms tick
+      const tickInterval = Math.max(4, Math.floor(1000 / (rate / msgsPerTick)));
+
+      log(`Flood config: ${msgsPerTick} msgs per ${tickInterval}ms tick`, 'info');
+
+      function sendBurst() {
+        if (!ws || ws.readyState !== WebSocket.OPEN || Date.now() >= endTime) {
+          stopFlood();
+          log(`Flood completed: ${msgCount} messages sent in ${(Date.now() - startTime)/1000}s`, 'info');
+          return;
+        }
+
+        // Send burst of messages
+        for (let i = 0; i < msgsPerTick; i++) {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            const msg = JSON.stringify({
+              type: 'flood',
+              seq: msgCount++,
+              timestamp: Date.now(),
+              data: 'x'.repeat(50)
+            });
+            ws.send(msg);
+            msgSentCount++;
+          }
+        }
+        updateStats();
+
+        floodInterval = setTimeout(sendBurst, tickInterval);
+      }
+
+      sendBurst();
+    }
+
+    function stopFlood() {
+      if (floodInterval) {
+        clearTimeout(floodInterval); // Changed to clearTimeout
+        floodInterval = null;
+      }
+      if (floodTimeout) {
+        clearTimeout(floodTimeout);
+        floodTimeout = null;
+      }
+      document.getElementById('floodStatus').textContent = 'Idle';
+      document.getElementById('floodBtn').disabled = false;
+      document.getElementById('stopFloodBtn').disabled = true;
+    }
+
+    // Handle Enter key in message input
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>

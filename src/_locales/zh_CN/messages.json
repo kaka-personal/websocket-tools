@@ -1035,6 +1035,26 @@
     "message": "如果你喜欢这个插件，可以探索这个仓库～",
     "description": "Translation for simulate.animated.githubTooltip"
   },
+  "panel_trafficPause_title": {
+    "message": "检测到高流量",
+    "description": "Translation for panel.trafficPause.title"
+  },
+  "panel_trafficPause_description": {
+    "message": "消息监控已暂停 ({{rate}} 消息/秒)。点击恢复继续。",
+    "description": "Translation for panel.trafficPause.description"
+  },
+  "panel_trafficPause_resume": {
+    "message": "恢复",
+    "description": "Translation for panel.trafficPause.resume"
+  },
+  "panel_circuitBreaker_title": {
+    "message": "检测到高流量",
+    "description": "Translation for panel.circuitBreaker.title"
+  },
+  "panel_circuitBreaker_description": {
+    "message": "由于高流量 ({{rate}} 消息/秒)，监控已停止。点击 Monitor 按钮恢复。",
+    "description": "Translation for panel.circuitBreaker.description"
+  },
   "extensionName": {
     "message": "WebSocket DevTools",
     "description": "Extension name"

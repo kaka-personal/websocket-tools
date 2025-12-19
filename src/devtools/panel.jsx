@@ -11,7 +11,12 @@ import ExtensionIcon from "../Icons/ExtensionIcon.jsx";
 import { t, addLanguageChangeListener, getCurrentLanguage, initForPanel } from "../utils/i18n.js";
 import i18n from "../utils/i18n.js";
 import "../styles/main.css";
-import { Ban } from "lucide-react";
+import { Ban, AlertTriangle } from "lucide-react";
+
+// Performance configuration
+const MAX_MESSAGES_PER_CONNECTION = 5000; // Max messages retained per connection
+const MAX_TOTAL_MESSAGES = 20000; // Max total messages across all connections
+const MAX_PROCESSED_IDS = 50000; // Max processed message IDs to retain
 
 const WebSocketPanel = () => {
   const [isMonitoring, setIsMonitoring] = useState(true);
@@ -22,6 +27,10 @@ const WebSocketPanel = () => {
   const [websocketEvents, setWebsocketEvents] = useState([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
   const [currentTabId, setCurrentTabId] = useState(null);
+
+  // Circuit breaker state - for showing banner when high traffic stops monitoring
+  const [circuitBreakerTriggered, setCircuitBreakerTriggered] = useState(false);
+  const [circuitBreakerRate, setCircuitBreakerRate] = useState(0);
 
   // Separate connection management and message management
   const [connectionsMap, setConnectionsMap] = useState(new Map()); // Basic info for all connections (including active and inactive)
@@ -222,11 +231,21 @@ const WebSocketPanel = () => {
           return newConnections;
         });
 
-        // Batch update events list
+        // Batch update events list with capacity limit
         setWebsocketEvents((prevEvents) => {
-          // Optimized: push all at once
-          return [...prevEvents, ...validEvents];
+          const newEvents = [...prevEvents, ...validEvents];
+          // Limit total messages to prevent memory overflow
+          if (newEvents.length > MAX_TOTAL_MESSAGES) {
+            return newEvents.slice(-MAX_TOTAL_MESSAGES);
+          }
+          return newEvents;
         });
+
+        // Clean up processed message IDs if too large
+        if (processedMessageIds.current.size > MAX_PROCESSED_IDS) {
+          const idsArray = Array.from(processedMessageIds.current);
+          processedMessageIds.current = new Set(idsArray.slice(-MAX_PROCESSED_IDS / 2));
+        }
 
       } else if (message.type === "websocket-event") {
         const eventData = message.data;
@@ -266,20 +285,15 @@ const WebSocketPanel = () => {
           }, 100);
         }
 
-        // Handle emergency shutdown event
-        if (eventData.type === "emergency-shutdown") {
-          console.warn(`[WebSocket Proxy] Emergency shutdown: ${eventData.reason}, ${eventData.messagesPerSecond} msg/s`);
-          
-          // Turn off monitoring in UI
+        // Handle circuit breaker triggered - show banner and update UI
+        if (eventData.type === "circuit-breaker-triggered") {
+          console.warn(`[WebSocket Proxy Panel] Circuit breaker triggered: ${eventData.messagesPerSecond} msg/s`);
+
+          // Turn off monitoring in UI and show banner
           setIsMonitoring(false);
-          
-          // Send stop monitoring message to background
-          chrome.runtime.sendMessage({
-            type: "stop-monitoring",
-            tabId: currentTabId,
-          }).catch(() => {});
-          
-          // Don't process this as a regular websocket event
+          setCircuitBreakerTriggered(true);
+          setCircuitBreakerRate(eventData.messagesPerSecond || 0);
+
           if (hasSendResponse) {
             sendResponse({ received: true, messageId });
           }
@@ -336,6 +350,10 @@ const WebSocketPanel = () => {
 
         setWebsocketEvents((prevEvents) => {
           const newEvents = [...prevEvents, eventData];
+          // Limit total messages to prevent memory overflow
+          if (newEvents.length > MAX_TOTAL_MESSAGES) {
+            return newEvents.slice(-MAX_TOTAL_MESSAGES);
+          }
           return newEvents;
         });
       } else if (message.type === "page-refresh") {
@@ -434,16 +452,21 @@ const WebSocketPanel = () => {
   const handleStartMonitoring = () => {
     setIsMonitoring(true);
 
-    // 发送开始监控消息到 background script
+    // Clear circuit breaker banner if showing
+    if (circuitBreakerTriggered) {
+      setCircuitBreakerTriggered(false);
+      setCircuitBreakerRate(0);
+    }
+
+    // Send start monitoring message to background script
     chrome.runtime
       .sendMessage({
         type: "start-monitoring",
         tabId: currentTabId,
       })
-      .then((response) => {
-      })
+      .then(() => {})
       .catch((error) => {
-        console.error("❌ Failed to start monitoring:", error);
+        console.error("Failed to start monitoring:", error);
       });
   };
 
@@ -699,6 +722,24 @@ const WebSocketPanel = () => {
             </button>
           </div>
         </div>
+
+        {/* Circuit Breaker Warning Banner */}
+        {circuitBreakerTriggered && (
+          <div className="traffic-pause-banner">
+            <div className="traffic-pause-content">
+              <AlertTriangle size={18} className="traffic-pause-icon" />
+              <div className="traffic-pause-text">
+                <span className="traffic-pause-title">
+                  {t("panel.circuitBreaker.title") || "High Traffic Detected"}
+                </span>
+                <span className="traffic-pause-description">
+                  {t("panel.circuitBreaker.description", { rate: circuitBreakerRate }) ||
+                   `Monitoring stopped due to high traffic (${circuitBreakerRate} msg/s). Click Monitor to resume.`}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="panel-content-fixed">
           {/* 左侧固定宽度布局：ControlPanel + WebSocketList */}

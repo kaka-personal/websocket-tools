@@ -257,5 +257,10 @@
   "popup.footer.github": "GitHub",
   "system.closeEvent.notice": "仅\"客户端关闭\"事件（Close Code 为 1000 或 3000-4999）会真实调用 ws.close() 并断开连接，其余所有关闭事件（包括服务端关闭）仅模拟关闭，虽然会触发 ws.onclose.call() 事件，但底层连接未真正断开。",
   "simulate.animated.heartTooltip": "如果你喜欢这个插件，请给我们5星好评～",
-  "simulate.animated.githubTooltip": "如果你喜欢这个插件，可以探索这个仓库～"
+  "simulate.animated.githubTooltip": "如果你喜欢这个插件，可以探索这个仓库～",
+  "panel.trafficPause.title": "检测到高流量",
+  "panel.trafficPause.description": "消息监控已暂停 ({{rate}} 消息/秒)。点击恢复继续。",
+  "panel.trafficPause.resume": "恢复",
+  "panel.circuitBreaker.title": "检测到高流量",
+  "panel.circuitBreaker.description": "由于高流量 ({{rate}} 消息/秒)，监控已停止。点击 Monitor 按钮恢复。"
 } 

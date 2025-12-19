@@ -401,96 +401,60 @@
   let eventBatchQueue = [];
   let batchTimer = null;
 
-  // Adaptive throttling configuration - 30% performance improvement (moderate)
-  const HIGH_TRAFFIC_THRESHOLD = 70; // messages per second (30% lower from original 100)
-  const EXTREME_TRAFFIC_THRESHOLD = 350; // messages per second (30% lower from original 500)
+  // Traffic monitoring configuration - optimized for high-traffic apps like Figma
+  // Traffic monitoring - simple circuit breaker
   const TRAFFIC_WINDOW_MS = 1000; // 1 second window
-  const AUTO_IGNORE_THRESHOLD = 700; // auto-ignore after 700 msg/sec (30% lower from original 1000)
-  const EMERGENCY_SHUTDOWN_THRESHOLD = 200; // Emergency shutdown - stop all monitoring (lowered for testing)
-  
+  const TRAFFIC_PAUSE_THRESHOLD = 800; // Stop monitoring when exceeded
+
   // Connection traffic monitoring
-  const connectionTraffic = new Map(); // connectionId -> { count, lastReset, ignored, userIgnored }
-  
-  function updateConnectionTraffic(connectionId) {
+  const connectionTraffic = new Map(); // connectionId -> { count, lastReset }
+
+  function checkTrafficAndCircuitBreak(connectionId) {
     const now = Date.now();
     let traffic = connectionTraffic.get(connectionId);
-    
+
     if (!traffic) {
-      traffic = { count: 0, lastReset: now, ignored: false, userIgnored: false };
+      traffic = { count: 0, lastReset: now };
       connectionTraffic.set(connectionId, traffic);
     }
-    
+
     // Reset counter if window expired
     if (now - traffic.lastReset > TRAFFIC_WINDOW_MS) {
       traffic.count = 0;
       traffic.lastReset = now;
     }
-    
+
     traffic.count++;
-    
-    // Debug: Log traffic levels for monitoring
-    if (traffic.count % 50 === 0) {
-      console.log(`[WebSocket Proxy] Traffic level: ${traffic.count} msg/s (Emergency threshold: ${EMERGENCY_SHUTDOWN_THRESHOLD})`);
+
+    // Circuit breaker - when threshold exceeded, stop monitoring
+    if (traffic.count > TRAFFIC_PAUSE_THRESHOLD && proxyState.isMonitoring) {
+      console.warn(`[WebSocket Proxy] Circuit breaker triggered - High traffic (${traffic.count} msg/s). Stopping monitoring.`);
+
+      // Stop monitoring
+      proxyState.isMonitoring = false;
+
+      // Notify (will be received by panel if open, or background will update state)
+      setTimeout(() => {
+        try {
+          window.postMessage({
+            source: "websocket-proxy-injected",
+            type: "websocket-event",
+            payload: {
+              type: "circuit-breaker-triggered",
+              connectionId: connectionId,
+              messagesPerSecond: traffic.count,
+              timestamp: Date.now()
+            }
+          }, "*");
+        } catch (error) {
+          // Ignore
+        }
+      }, 0);
+
+      return true; // Circuit breaker triggered
     }
-    
-     // Emergency shutdown - completely stop monitoring for extreme traffic
-     if (!traffic.userIgnored && traffic.count > EMERGENCY_SHUTDOWN_THRESHOLD) {
-       // Disable monitoring completely
-       proxyState.isMonitoring = false;
-       
-       console.warn(`[WebSocket Proxy] EMERGENCY SHUTDOWN - Monitoring disabled due to extreme traffic (${traffic.count} msg/s)`);
-       
-       // Send shutdown notification
-       setTimeout(() => {
-         try {
-           console.log(`[WebSocket Proxy] Sending emergency shutdown notification: ${traffic.count} msg/s`);
-           window.postMessage({
-             source: "websocket-proxy-injected",
-             type: "websocket-event",
-             payload: {
-               type: "emergency-shutdown",
-               reason: "extreme-traffic",
-               messagesPerSecond: traffic.count,
-               timestamp: Date.now()
-             }
-           }, "*");
-         } catch (error) {
-           console.error("[WebSocket Proxy] Failed to send emergency shutdown notification:", error);
-         }
-       }, 0);
-       
-       return traffic;
-     }
-     
-     // Auto-ignore high traffic connections (less aggressive)
-     if (!traffic.userIgnored && traffic.count > AUTO_IGNORE_THRESHOLD) {
-       traffic.ignored = true;
-       
-       // Send notification about auto-ignore
-       sendEvent({
-         type: "connection-auto-ignored",
-         id: connectionId,
-         reason: "high-traffic",
-         messagesPerSecond: traffic.count,
-         timestamp: Date.now()
-       });
-     }
-    
-    return traffic;
-  }
-  
-  function isConnectionIgnored(connectionId) {
-    const traffic = connectionTraffic.get(connectionId);
-    return traffic && (traffic.ignored || traffic.userIgnored);
-  }
-  
-  function getConnectionTrafficLevel(connectionId) {
-    const traffic = connectionTraffic.get(connectionId);
-    if (!traffic) return "normal";
-    
-    if (traffic.count > EXTREME_TRAFFIC_THRESHOLD) return "extreme";
-    if (traffic.count > HIGH_TRAFFIC_THRESHOLD) return "high";
-    return "normal";
+
+    return false; // Normal
   }
 
   function flushBatchQueue() {
@@ -524,35 +488,15 @@
       return;
     }
 
-    // Check if this connection should be ignored due to high traffic
+    // Check traffic and trigger circuit breaker if needed
     if (eventData.id && eventData.type === "message") {
-      const traffic = updateConnectionTraffic(eventData.id);
-      
-      if (isConnectionIgnored(eventData.id)) {
-        return; // Skip processing for ignored connections
+      if (checkTrafficAndCircuitBreak(eventData.id)) {
+        return; // Circuit breaker triggered, stop processing
       }
-      
-      // Add traffic info to event
-      eventData.trafficLevel = getConnectionTrafficLevel(eventData.id);
-      eventData.messagesPerSecond = traffic.count;
-      
-       // Performance improvement: Moderate message sampling for high traffic (30% improvement)
-       if (eventData.trafficLevel === "extreme") {
-         // Only process every 3rd message for extreme traffic (67% reduction)
-         if (traffic.count % 3 !== 0) {
-           return;
-         }
-       } else if (eventData.trafficLevel === "high") {
-         // Only process every 2nd message for high traffic (50% reduction)
-         if (traffic.count % 2 !== 0) {
-           return;
-         }
-       }
     }
 
     try {
       // Add frame context to event data
-      // Use origin + pathname for more stable frame identification
       const getStableFrameId = () => {
         try {
           const url = new URL(window.location.href);
@@ -566,36 +510,25 @@
         ...eventData,
         frameContext: {
           url: window.location.href,
-          stableId: getStableFrameId(), // More stable identifier that ignores query params
+          stableId: getStableFrameId(),
           isIframe: window !== window.top,
           frameId: window !== window.top ? getStableFrameId() : null
         }
       };
-      
-      // Adaptive batching based on traffic level
-      let adaptiveBatchSize = BATCH_SIZE_THRESHOLD;
-      let adaptiveBatchTime = BATCH_TIME_THRESHOLD;
-      
-       if (eventData.trafficLevel === "extreme") {
-         adaptiveBatchSize = 130; // 30% larger batches for moderate performance improvement
-         adaptiveBatchTime = 200;  // Moderate processing speed
-       } else if (eventData.trafficLevel === "high") {
-         adaptiveBatchSize = 85; // Moderate batch size increase
-         adaptiveBatchTime = 180;  // Moderate processing speed
-       }
-      
+
       // Push to queue
       eventBatchQueue.push(eventWithFrameContext);
 
-      // Check adaptive threshold
-      if (eventBatchQueue.length >= adaptiveBatchSize) {
+      // Check threshold
+      if (eventBatchQueue.length >= BATCH_SIZE_THRESHOLD) {
         flushBatchQueue();
       } else if (!batchTimer) {
         // Start timer if not running
-        batchTimer = setTimeout(flushBatchQueue, adaptiveBatchTime);
+        batchTimer = setTimeout(flushBatchQueue, BATCH_TIME_THRESHOLD);
       }
 
     } catch (error) {
+      // Ignore
     }
   }
 
@@ -1399,24 +1332,10 @@
       const stats = {};
       for (const [id, traffic] of connectionTraffic.entries()) {
         stats[id] = {
-          messagesPerSecond: traffic.count,
-          ignored: traffic.ignored,
-          userIgnored: traffic.userIgnored,
-          level: getConnectionTrafficLevel(id)
+          messagesPerSecond: traffic.count
         };
       }
       return stats;
-    },
-    ignoreConnection: (connectionId) => {
-      const traffic = connectionTraffic.get(connectionId);
-      if (traffic) traffic.userIgnored = true;
-    },
-    unignoreConnection: (connectionId) => {
-      const traffic = connectionTraffic.get(connectionId);
-      if (traffic) {
-        traffic.userIgnored = false;
-        traffic.ignored = false;
-      }
     },
     blockOutgoing: (enabled) => {
       proxyState.blockOutgoing = enabled;

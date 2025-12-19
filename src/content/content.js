@@ -235,6 +235,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       );
       break;
 
+    case "resume-traffic-monitoring":
+      console.log("[WebSocket Proxy Content] Forwarding resume-traffic-monitoring to page");
+      window.postMessage(
+        {
+          source: "websocket-proxy-content",
+          type: "resume-traffic-monitoring",
+        },
+        "*"
+      );
+      sendResponse({ success: true, forwarded: true });
+      break;
+
     case "get-proxy-state":
       window.postMessage(
         {

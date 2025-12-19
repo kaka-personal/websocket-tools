@@ -257,5 +257,10 @@
   "popup.footer.github": "GitHub",
   "system.closeEvent.notice": "Only 'Client Close' events (with Close Code 1000 or 3000-4999) will actually call ws.close() and close the connection. All other close events (including server-side) are simulated: ws.onclose.call() will be triggered, but the underlying connection is not truly closed.",
   "simulate.animated.heartTooltip": "If you like it, please give us a 5-star rating!",
-  "simulate.animated.githubTooltip": "If you like it, try check out our Github repo!"
+  "simulate.animated.githubTooltip": "If you like it, try check out our Github repo!",
+  "panel.trafficPause.title": "High Traffic Detected",
+  "panel.trafficPause.description": "Message monitoring paused ({{rate}} msg/s). Click Resume to continue.",
+  "panel.trafficPause.resume": "Resume",
+  "panel.circuitBreaker.title": "High Traffic Detected",
+  "panel.circuitBreaker.description": "Monitoring stopped due to high traffic ({{rate}} msg/s). Click Monitor to resume."
 } 

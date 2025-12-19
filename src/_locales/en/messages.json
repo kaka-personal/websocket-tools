@@ -1035,6 +1035,26 @@
     "message": "If you like it, try check out our Github repo!",
     "description": "Translation for simulate.animated.githubTooltip"
   },
+  "panel_trafficPause_title": {
+    "message": "High Traffic Detected",
+    "description": "Translation for panel.trafficPause.title"
+  },
+  "panel_trafficPause_description": {
+    "message": "Message monitoring paused ({{rate}} msg/s). Click Resume to continue.",
+    "description": "Translation for panel.trafficPause.description"
+  },
+  "panel_trafficPause_resume": {
+    "message": "Resume",
+    "description": "Translation for panel.trafficPause.resume"
+  },
+  "panel_circuitBreaker_title": {
+    "message": "High Traffic Detected",
+    "description": "Translation for panel.circuitBreaker.title"
+  },
+  "panel_circuitBreaker_description": {
+    "message": "Monitoring stopped due to high traffic ({{rate}} msg/s). Click Monitor to resume.",
+    "description": "Translation for panel.circuitBreaker.description"
+  },
   "extensionName": {
     "message": "WebSocket DevTools",
     "description": "Extension name"

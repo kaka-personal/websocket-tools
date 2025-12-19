@@ -37,4 +37,81 @@
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
 }
+
+/* Traffic Pause Banner */
+.traffic-pause-banner {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 8px 16px;
+  animation: traffic-pause-pulse 2s ease-in-out infinite;
+}
+
+@keyframes traffic-pause-pulse {
+  0%, 100% {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%);
+  }
+}
+
+.traffic-pause-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.traffic-pause-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.traffic-pause-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.traffic-pause-title {
+  color: #fbbf24;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.traffic-pause-description {
+  color: rgba(251, 191, 36, 0.8);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.traffic-pause-resume-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: none;
+  border-radius: 6px;
+  color: #1a1a2e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.traffic-pause-resume-btn:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.traffic-pause-resume-btn:active {
+  transform: translateY(0);
+}
  

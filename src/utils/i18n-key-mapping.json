@@ -257,5 +257,10 @@
   "popup_footer_github": "popup.footer.github",
   "system_closeEvent_notice": "system.closeEvent.notice",
   "simulate_animated_heartTooltip": "simulate.animated.heartTooltip",
-  "simulate_animated_githubTooltip": "simulate.animated.githubTooltip"
+  "simulate_animated_githubTooltip": "simulate.animated.githubTooltip",
+  "panel_trafficPause_title": "panel.trafficPause.title",
+  "panel_trafficPause_description": "panel.trafficPause.description",
+  "panel_trafficPause_resume": "panel.trafficPause.resume",
+  "panel_circuitBreaker_title": "panel.circuitBreaker.title",
+  "panel_circuitBreaker_description": "panel.circuitBreaker.description"
 }
