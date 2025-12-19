@@ -8,7 +8,11 @@
 
 # WebSocket DevTools
 
+专业的 WebSocket 调试工具，提供监控、消息模拟和流量拦截等功能
+
 Complete WebSocket Traffic Control with advanced proxy, simulation, and blocking capabilities
+
+
 
 
 [![][version-shield]][version-link]
