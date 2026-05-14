@@ -6,6 +6,8 @@
   **Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools.**
 
   A developer-focused toolbox for viewing live frames, simulating client/server messages, blocking noisy traffic, and reproducing real-time edge cases without touching application code.
+
+  **English** | [简体中文](./README_zh-CN.md)
 </div>
 
 ## Why websocket-tool

@@ -6,6 +6,8 @@
   **直接在 Chrome DevTools 中查看、回放并控制 WebSocket 流量。**
 
   面向开发者的实时调试工具箱，适合查看消息帧、模拟客户端或服务端消息、拦截噪声流量，并快速复现各种实时通信边界场景。
+
+  [English](./README.md) | **简体中文**
 </div>
 
 ## 为什么用 websocket-tool
