@@ -554,6 +554,62 @@ const WebSocketPanel = () => {
     }
   };
 
+  const handleImportMessages = (connectionId, importedMessages) => {
+    if (!connectionId || !Array.isArray(importedMessages) || importedMessages.length === 0) {
+      return;
+    }
+
+    const connectionInfo = connectionsMap.get(connectionId);
+    const baseTimestamp = Date.now();
+    const normalizedEvents = importedMessages.map((message, index) => {
+      const parsedTimestamp = Number(message.timestamp);
+      return {
+        id: connectionId,
+        url: connectionInfo?.url || message.url || "Imported Connection",
+        type: message.type || "message",
+        data: message.data ?? "",
+        direction: message.direction || null,
+        timestamp: Number.isFinite(parsedTimestamp)
+          ? parsedTimestamp
+          : baseTimestamp + index,
+        status: connectionInfo?.status || "open",
+        messageId:
+          message.messageId ||
+          `msg_imported_${baseTimestamp}_${index}_${Math.random()
+            .toString(36)
+            .slice(2, 8)}`,
+        simulated: Boolean(message.simulated),
+        blocked: Boolean(message.blocked),
+        reason: message.reason || null,
+        isProtobuf: Boolean(message.isProtobuf),
+        protobufDecoded: message.protobufDecoded ?? null,
+        imported: true,
+      };
+    });
+
+    setConnectionsMap((prevConnections) => {
+      const newConnections = new Map(prevConnections);
+      const existing = newConnections.get(connectionId);
+      const lastImportedTimestamp = normalizedEvents.reduce(
+        (maxTimestamp, event) => Math.max(maxTimestamp, event.timestamp),
+        existing?.lastActivity || 0
+      );
+
+      newConnections.set(connectionId, {
+        id: connectionId,
+        url: existing?.url || connectionInfo?.url || "Imported Connection",
+        status: existing?.status || "open",
+        timestamp: existing?.timestamp || lastImportedTimestamp,
+        lastActivity: lastImportedTimestamp,
+        frameContext: existing?.frameContext,
+      });
+
+      return newConnections;
+    });
+
+    setWebsocketEvents((prevEvents) => [...prevEvents, ...normalizedEvents]);
+  };
+
   // Get all messages and events for the selected connection
   const getSelectedConnectionData = () => {
     if (!selectedConnectionId) return null;
@@ -790,6 +846,7 @@ const WebSocketPanel = () => {
                   selectedConnectionId={selectedConnectionId} // 传递连接ID用于详情面板重新渲染
                   onSimulateMessage={handleSimulateMessage}
                   onClearMessages={handleClearMessages}
+                  onImportMessages={handleImportMessages}
                   onOpenSimulatePanel={handleOpenSimulatePanel}
                 />
               </div>

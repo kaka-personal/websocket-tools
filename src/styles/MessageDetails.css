@@ -145,6 +145,11 @@
   min-width: 60px;
 }
 
+.filter-controls.filter-presets-select select {
+  min-width: 120px;
+  max-width: 160px;
+}
+
 .filter-controls select:focus,
 .filter-controls input:focus {
   border-color: var(--accent-color);
@@ -303,9 +308,22 @@
   color: var(--accent-color);
 }
 
+.import-messages-btn:hover:not(:disabled),
+.save-filter-btn:hover:not(:disabled) {
+  color: #34d399;
+}
+
+.delete-filter-btn:hover:not(:disabled) {
+  color: var(--danger-color);
+}
+
 .clear-messages-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.hidden-file-input {
+  display: none;
 }
 
 .filter-feedback {

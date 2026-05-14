@@ -799,6 +799,34 @@
     "message": "正则表达式无效",
     "description": "Translation for messageDetails.controls.invalidRegex"
   },
+  "messageDetails_controls_filterFavorites": {
+    "message": "筛选收藏",
+    "description": "Translation for messageDetails.controls.filterFavorites"
+  },
+  "messageDetails_controls_saveFilterFavorite": {
+    "message": "保存当前筛选",
+    "description": "Translation for messageDetails.controls.saveFilterFavorite"
+  },
+  "messageDetails_controls_deleteFilterFavorite": {
+    "message": "删除当前筛选收藏",
+    "description": "Translation for messageDetails.controls.deleteFilterFavorite"
+  },
+  "messageDetails_controls_filterFavoriteName": {
+    "message": "筛选收藏名称",
+    "description": "Translation for messageDetails.controls.filterFavoriteName"
+  },
+  "messageDetails_controls_exportMessages": {
+    "message": "导出所有消息",
+    "description": "Translation for messageDetails.controls.exportMessages"
+  },
+  "messageDetails_controls_importMessages": {
+    "message": "导入消息到当前连接",
+    "description": "Translation for messageDetails.controls.importMessages"
+  },
+  "messageDetails_controls_importMessagesError": {
+    "message": "无法从该文件导入消息",
+    "description": "Translation for messageDetails.controls.importMessagesError"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "清空所有消息",
     "description": "Translation for messageDetails.controls.clearMessages"

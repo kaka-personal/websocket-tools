@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { analyzeFilterPattern, filterMessages } from "../utils/filterUtils";
+import filterPresetsService from "../utils/filterPresetsService";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
 import { addFromMessageList } from "../utils/globalFavorites";
-import { Ban, Search, Settings, CircleX, Download } from "lucide-react";
+import {
+  Ban,
+  Search,
+  Settings,
+  CircleX,
+  Download,
+  Upload,
+  Star,
+  Trash2,
+} from "lucide-react";
 import { t } from "../utils/i18n.js";
 import CheeseIcon from "../Icons/cheese.jsx";
 import ProtobufIcon from "../Icons/Protobuf.jsx";
@@ -67,6 +77,7 @@ const MessageDetails = ({
   isIntercepting,
   onSimulateMessage,
   onClearMessages,
+  onImportMessages,
   onOpenSimulatePanel,
 }) => {
   const [filterDirection, setFilterDirection] = useState("all"); // 'all' | 'outgoing' | 'incoming'
@@ -78,8 +89,12 @@ const MessageDetails = ({
   const [filterHistory, setFilterHistory] = useState([]);
   const [filterHistoryIndex, setFilterHistoryIndex] = useState(-1);
   const [filterHistoryDraft, setFilterHistoryDraft] = useState("");
+  const [filterPresets, setFilterPresets] = useState([]);
+  const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
   const searchInputRef = useRef(null);
+  const importInputRef = useRef(null);
   const isNavigatingFilterHistoryRef = useRef(false);
+  const isApplyingFilterPresetRef = useRef(false);
 
   const filterPattern = useMemo(() => analyzeFilterPattern(filterText), [filterText]);
 
@@ -104,6 +119,9 @@ const MessageDetails = ({
 
   const handleFilterTextChange = (e) => {
     isNavigatingFilterHistoryRef.current = false;
+    if (!isApplyingFilterPresetRef.current && selectedFilterPresetId) {
+      setSelectedFilterPresetId("");
+    }
     setFilterText(e.target.value);
     if (filterHistoryIndex !== -1) {
       setFilterHistoryIndex(-1);
@@ -172,6 +190,7 @@ const MessageDetails = ({
   useEffect(() => {
     setFilterHistoryIndex(-1);
     setFilterHistoryDraft("");
+    setSelectedFilterPresetId("");
   }, [selectedConnectionId]);
 
   useEffect(() => {
@@ -189,6 +208,21 @@ const MessageDetails = ({
 
     return () => clearTimeout(timeoutId);
   }, [filterText]);
+
+  useEffect(() => {
+    setFilterPresets(filterPresetsService.getPresets());
+  }, []);
+
+  useEffect(() => {
+    if (isApplyingFilterPresetRef.current) {
+      isApplyingFilterPresetRef.current = false;
+      return;
+    }
+
+    if (selectedFilterPresetId) {
+      setSelectedFilterPresetId("");
+    }
+  }, [filterDirection, filterInvert]);
 
   // Keyboard navigation for message selection
   useEffect(() => {
@@ -471,6 +505,9 @@ const MessageDetails = ({
     setFilterInvert(false);
     setFilterHistoryIndex(-1);
     setFilterHistoryDraft("");
+    if (!isApplyingFilterPresetRef.current) {
+      setSelectedFilterPresetId("");
+    }
   };
 
   const handleClearMessagesList = () => {
@@ -478,6 +515,125 @@ const MessageDetails = ({
     onClearMessages(connection.id);
     setSelectedMessageKey(null);
     clearHighlights(); // Clear any remaining highlights
+  };
+
+  const handleImportMessagesClick = () => {
+    importInputRef.current?.click();
+  };
+
+  const handleImportMessagesFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !connection || !onImportMessages) {
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      const fileText = await file.text();
+      const parsed = JSON.parse(fileText);
+      const sourceMessages = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(parsed?.messages)
+        ? parsed.messages
+        : null;
+
+      if (!sourceMessages || sourceMessages.length === 0) {
+        throw new Error("No messages found in file");
+      }
+
+      const normalizedMessages = sourceMessages.map((message, index) => ({
+        messageId:
+          message.messageId ||
+          `msg_import_${Date.now()}_${index}_${Math.random()
+            .toString(36)
+            .slice(2, 8)}`,
+        type: message.type || "message",
+        direction: message.direction || null,
+        timestamp:
+          Number.isFinite(Number(message.timestamp))
+            ? Number(message.timestamp)
+            : Date.now() + index,
+        data: message.data ?? "",
+        simulated: Boolean(message.simulated),
+        blocked: Boolean(message.blocked),
+        reason: message.reason || null,
+        isProtobuf: Boolean(message.isProtobuf),
+        protobufDecoded: message.protobufDecoded ?? null,
+        url: parsed?.connection?.url || connection.url,
+      }));
+
+      onImportMessages(connection.id, normalizedMessages);
+    } catch (error) {
+      window.alert(t("messageDetails.controls.importMessagesError"));
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleSaveCurrentFilterPreset = () => {
+    const presetName = window.prompt(
+      t("messageDetails.controls.filterFavoriteName"),
+      selectedFilterPresetId
+        ? filterPresets.find((item) => item.id === selectedFilterPresetId)?.name || ""
+        : filterText.trim()
+    );
+
+    if (!presetName || !presetName.trim()) {
+      return;
+    }
+
+    const nextPreset = filterPresetsService.addPreset({
+      name: presetName,
+      filters: {
+        direction: filterDirection,
+        text: filterText,
+        invert: filterInvert,
+      },
+    });
+
+    if (!nextPreset) {
+      return;
+    }
+
+    const nextPresets = filterPresetsService.getPresets();
+    setFilterPresets(nextPresets);
+    setSelectedFilterPresetId(nextPreset.id);
+  };
+
+  const handleFilterPresetChange = (e) => {
+    const presetId = e.target.value;
+    setSelectedFilterPresetId(presetId);
+
+    if (!presetId) {
+      return;
+    }
+
+    const selectedPreset = filterPresets.find((item) => item.id === presetId);
+    if (!selectedPreset) {
+      return;
+    }
+
+    isApplyingFilterPresetRef.current = true;
+    isNavigatingFilterHistoryRef.current = false;
+    setFilterDirection(selectedPreset.filters.direction || "all");
+    setFilterText(selectedPreset.filters.text || "");
+    setFilterInvert(Boolean(selectedPreset.filters.invert));
+    setFilterHistoryIndex(-1);
+    setFilterHistoryDraft("");
+  };
+
+  const handleDeleteFilterPreset = () => {
+    if (!selectedFilterPresetId) {
+      return;
+    }
+
+    const deleted = filterPresetsService.deletePreset(selectedFilterPresetId);
+    if (!deleted) {
+      return;
+    }
+
+    setFilterPresets(filterPresetsService.getPresets());
+    setSelectedFilterPresetId("");
   };
 
   const handleExportMessages = () => {
@@ -618,7 +774,15 @@ const MessageDetails = ({
         <div className="controls">
           <div className="control-row">
             <div className="filter-controls direction-filter">
-              <select value={filterDirection} onChange={(e) => setFilterDirection(e.target.value)}>
+              <select
+                value={filterDirection}
+                onChange={(e) => {
+                  if (!isApplyingFilterPresetRef.current && selectedFilterPresetId) {
+                    setSelectedFilterPresetId("");
+                  }
+                  setFilterDirection(e.target.value);
+                }}
+              >
                 <option value="all">{t("messageDetails.controls.all")}</option>
                 <option value="outgoing">{t("messageDetails.controls.send")}</option>
                 <option value="incoming">{t("messageDetails.controls.receive")}</option>
@@ -646,17 +810,59 @@ const MessageDetails = ({
               </div>
             </div>
             <label className="invert-checkbox">
-              <input type="checkbox" checked={filterInvert} onChange={(e) => setFilterInvert(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={filterInvert}
+                onChange={(e) => {
+                  if (!isApplyingFilterPresetRef.current && selectedFilterPresetId) {
+                    setSelectedFilterPresetId("");
+                  }
+                  setFilterInvert(e.target.checked);
+                }}
+              />
               <span className="checkmark"></span>
               <span className="checkbox-label">{t("messageDetails.controls.invert")}</span>
             </label>
+            <div className="filter-controls filter-presets-select">
+              <select value={selectedFilterPresetId} onChange={handleFilterPresetChange}>
+                <option value="">{t("messageDetails.controls.filterFavorites")}</option>
+                {filterPresets.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              className="clear-messages-btn save-filter-btn"
+              onClick={handleSaveCurrentFilterPreset}
+              title={t("messageDetails.controls.saveFilterFavorite")}
+            >
+              <Star size={14} />
+            </button>
+            <button
+              className="clear-messages-btn delete-filter-btn"
+              onClick={handleDeleteFilterPreset}
+              disabled={!selectedFilterPresetId}
+              title={t("messageDetails.controls.deleteFilterFavorite")}
+            >
+              <Trash2 size={14} />
+            </button>
             <button
               className="clear-messages-btn export-messages-btn"
               onClick={handleExportMessages}
               disabled={!connection || !connection.messages || connection.messages.length === 0}
-              title={t("favorites.export")}
+              title={t("messageDetails.controls.exportMessages")}
             >
               <Download size={14} />
+            </button>
+            <button
+              className="clear-messages-btn import-messages-btn"
+              onClick={handleImportMessagesClick}
+              disabled={!connection || !onImportMessages}
+              title={t("messageDetails.controls.importMessages")}
+            >
+              <Upload size={14} />
             </button>
             <button
               className="clear-messages-btn"
@@ -666,6 +872,13 @@ const MessageDetails = ({
             >
               <Ban size={14} />
             </button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden-file-input"
+              onChange={handleImportMessagesFileChange}
+            />
           </div>
           {filterPattern.mode === "regex" && (
             <div className="filter-feedback info">

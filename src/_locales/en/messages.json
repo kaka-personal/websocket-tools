@@ -799,6 +799,34 @@
     "message": "Invalid regex",
     "description": "Translation for messageDetails.controls.invalidRegex"
   },
+  "messageDetails_controls_filterFavorites": {
+    "message": "Filter presets",
+    "description": "Translation for messageDetails.controls.filterFavorites"
+  },
+  "messageDetails_controls_saveFilterFavorite": {
+    "message": "Save current filter",
+    "description": "Translation for messageDetails.controls.saveFilterFavorite"
+  },
+  "messageDetails_controls_deleteFilterFavorite": {
+    "message": "Delete selected filter preset",
+    "description": "Translation for messageDetails.controls.deleteFilterFavorite"
+  },
+  "messageDetails_controls_filterFavoriteName": {
+    "message": "Filter preset name",
+    "description": "Translation for messageDetails.controls.filterFavoriteName"
+  },
+  "messageDetails_controls_exportMessages": {
+    "message": "Export all messages",
+    "description": "Translation for messageDetails.controls.exportMessages"
+  },
+  "messageDetails_controls_importMessages": {
+    "message": "Import messages to current connection",
+    "description": "Translation for messageDetails.controls.importMessages"
+  },
+  "messageDetails_controls_importMessagesError": {
+    "message": "Unable to import messages from this file",
+    "description": "Translation for messageDetails.controls.importMessagesError"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "Clear all messages",
     "description": "Translation for messageDetails.controls.clearMessages"
