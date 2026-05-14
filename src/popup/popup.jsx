@@ -2,12 +2,33 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import i18n, { t, initForPopup } from "../utils/i18n.js";
 import { BUILD_VERSION_TEXT, BUILD_VERSION_TITLE } from "../utils/buildInfo.js";
+import { PROJECT_LINKS, openProjectLink } from "../utils/projectLinks.js";
 import { Settings, Zap, Activity, Power, Wifi, MonitorSpeaker, MessageCircle, Send, Ban, SquareActivity, Home, Heart, Github } from "lucide-react";
 
 const Popup = () => {
   const [isEnabled, setIsEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [, forceUpdate] = useState({});
+  const footerLinks = [
+    {
+      key: "chromeStore",
+      href: PROJECT_LINKS.chromeStore,
+      icon: Heart,
+      tooltip: t("popup.footer.support"),
+    },
+    {
+      key: "homepage",
+      href: PROJECT_LINKS.homepage,
+      icon: Home,
+      tooltip: t("popup.footer.homepage"),
+    },
+    {
+      key: "repository",
+      href: PROJECT_LINKS.repository,
+      icon: Github,
+      tooltip: t("popup.footer.github"),
+    },
+  ].filter((item) => item.href);
 
   // Load saved state and initialize popup language settings
   useEffect(() => {
@@ -98,7 +119,7 @@ const Popup = () => {
             </div>
           </div>
           <div style={styles.titleSection}>
-            <h3 style={styles.title}>WebSocket DevTools</h3>
+            <h3 style={styles.title}>{t("popup.title")}</h3>
             <div style={styles.statusBadge}>
               <div style={{
                 ...styles.statusDot,
@@ -204,54 +225,28 @@ const Popup = () => {
       {/* Footer */}
       <div style={styles.footer}>
         <span style={styles.versionText} title={BUILD_VERSION_TITLE}>{BUILD_VERSION_TEXT}</span>
-        <div style={styles.footerIcons}>
-
-          <div className="tooltip-container">
-            <a 
-              href="https://chromewebstore.google.com/detail/websocket-devtools/fmnaobbfmjaaaebelkacpmmmpaaefbod" 
-              target="_blank" 
-              className="footer-link"
-              style={styles.footerLink}
-              onClick={(e) => {
-                e.preventDefault();
-                chrome.tabs.create({ url: "https://chromewebstore.google.com/detail/websocket-devtools/fmnaobbfmjaaaebelkacpmmmpaaefbod" });
-              }}
-            >
-              <Heart size={14} />
-            </a>
-            <div className="tooltip">{t("popup.footer.support")}</div>
+        {footerLinks.length > 0 && (
+          <div style={styles.footerIcons}>
+            {footerLinks.map(({ key, href, icon: Icon, tooltip }) => (
+              <div className="tooltip-container" key={key}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="footer-link"
+                  style={styles.footerLink}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openProjectLink(key);
+                  }}
+                >
+                  <Icon size={14} />
+                </a>
+                <div className="tooltip">{tooltip}</div>
+              </div>
+            ))}
           </div>
-          <div className="tooltip-container">
-            <a 
-              href="https://websocket-devtools.com" 
-              target="_blank" 
-              className="footer-link"
-              style={styles.footerLink}
-              onClick={(e) => {
-                e.preventDefault();
-                chrome.tabs.create({ url: "https://websocket-devtools.com" });
-              }}
-            >
-              <Home size={14} />
-            </a>
-            <div className="tooltip">{t("popup.footer.homepage")}</div>
-          </div>
-          <div className="tooltip-container">
-            <a 
-              href="https://github.com/law-chain-hot/websocket-devtools" 
-              target="_blank" 
-              className="footer-link"
-              style={styles.footerLink}
-              onClick={(e) => {
-                e.preventDefault();
-                chrome.tabs.create({ url: "https://github.com/law-chain-hot/websocket-devtools" });
-              }}
-            >
-              <Github size={14} />
-            </a>
-            <div className="tooltip">{t("popup.footer.github")}</div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

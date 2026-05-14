@@ -1,10 +1,10 @@
 {
   "app_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for app.title"
   },
   "app_description": {
-    "message": "Monitor and debug WebSocket connections",
+    "message": "Inspect, replay, and control WebSocket traffic",
     "description": "Translation for app.description"
   },
   "monitor_status_active": {
@@ -36,7 +36,7 @@
     "description": "Translation for monitor.actions.resume"
   },
   "panel_header_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for panel.header.title"
   },
   "panel_header_status_active": {
@@ -984,7 +984,7 @@
     "description": "Translation for common.selectAll"
   },
   "popup_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for popup.title"
   },
   "popup_enableExtension": {
@@ -1012,15 +1012,15 @@
     "description": "Translation for popup.openDevTools"
   },
   "popup_devToolsHint": {
-    "message": "Press F12 → Find \"WebSocket DevTools\" tab",
+    "message": "Press F12 → Find \"websocket-tool\" tab",
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for popup.infoCard.title"
   },
   "popup_infoCard_description": {
-    "message": "Monitor and debug WebSocket connections",
+    "message": "Inspect, replay, and control WebSocket traffic",
     "description": "Translation for popup.infoCard.description"
   },
   "popup_status": {
@@ -1060,11 +1060,11 @@
     "description": "Translation for popup.footer.homepage"
   },
   "popup_footer_support": {
-    "message": "Support me with 5 stars if you like it!",
+    "message": "Rate websocket-tool if it helped you",
     "description": "Translation for popup.footer.support"
   },
   "popup_footer_github": {
-    "message": "GitHub",
+    "message": "Repository",
     "description": "Translation for popup.footer.github"
   },
   "system_closeEvent_notice": {
@@ -1072,11 +1072,11 @@
     "description": "Translation for system.closeEvent.notice"
   },
   "simulate_animated_heartTooltip": {
-    "message": "If you like it, please give us a 5-star rating!",
+    "message": "If websocket-tool helped, consider leaving a store rating.",
     "description": "Translation for simulate.animated.heartTooltip"
   },
   "simulate_animated_githubTooltip": {
-    "message": "If you like it, try check out our Github repo!",
+    "message": "Explore the websocket-tool project repository.",
     "description": "Translation for simulate.animated.githubTooltip"
   },
   "panel_trafficPause_title": {
@@ -1100,15 +1100,15 @@
     "description": "Translation for panel.circuitBreaker.description"
   },
   "extensionName": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Extension name"
   },
   "extensionDescription": {
-    "message": "Monitor and debug WebSocket connections",
+    "message": "Inspect, replay, and control WebSocket traffic",
     "description": "Extension description"
   },
   "popupTitle": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Popup title"
   }
 }

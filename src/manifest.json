@@ -1,10 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "WebSocket DevTools",
+  "name": "websocket-tool",
   "version": "1.0.6",
-  "description": "Professional WebSocket debugging tool with message proxying, simulation, blocking and favorites features",
-  "author": "Brian Luo",
-  "homepage_url": "https://github.com/law-chain-hot/websocket-devtools",
+  "description": "Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools",
   "default_locale": "en",
 
   "icons": {
@@ -45,7 +43,7 @@
   ],
 
   "action": {
-    "default_title": "WebSocket Proxy Pro - Monitor & Debug WebSocket Connections",
+    "default_title": "websocket-tool - Inspect and Replay WebSocket Traffic",
     "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "icons/icon-small.png",

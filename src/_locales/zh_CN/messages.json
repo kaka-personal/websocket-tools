@@ -1,6 +1,6 @@
 {
   "app_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for app.title"
   },
   "app_description": {
@@ -36,7 +36,7 @@
     "description": "Translation for monitor.actions.resume"
   },
   "panel_header_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for panel.header.title"
   },
   "panel_header_status_active": {
@@ -984,7 +984,7 @@
     "description": "Translation for common.selectAll"
   },
   "popup_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Translation for popup.title"
   },
   "popup_enableExtension": {
@@ -1012,7 +1012,7 @@
     "description": "Translation for popup.openDevTools"
   },
   "popup_devToolsHint": {
-    "message": "按 F12 → 找到\"WebSocket DevTools\"标签页",
+    "message": "按 F12 → 找到\"websocket-tool\"标签页",
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
@@ -1100,7 +1100,7 @@
     "description": "Translation for panel.circuitBreaker.description"
   },
   "extensionName": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Extension name"
   },
   "extensionDescription": {
@@ -1108,7 +1108,7 @@
     "description": "Extension description"
   },
   "popupTitle": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tool",
     "description": "Popup title"
   }
 }

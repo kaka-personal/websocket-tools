@@ -11,6 +11,7 @@ import ExtensionIcon from "../Icons/ExtensionIcon.jsx";
 import { BUILD_VERSION_TEXT, BUILD_VERSION_TITLE } from "../utils/buildInfo.js";
 import { t, addLanguageChangeListener, getCurrentLanguage, initForPanel } from "../utils/i18n.js";
 import i18n from "../utils/i18n.js";
+import { hasProjectLink, openProjectLink } from "../utils/projectLinks.js";
 import "../styles/main.css";
 import { Ban, AlertTriangle } from "lucide-react";
 
@@ -754,32 +755,34 @@ const WebSocketPanel = () => {
               {BUILD_VERSION_TEXT}
             </span>
             <LanguageSelector />
-            <button 
-              className="extension-icon-panel"
-              onClick={() => {
-                chrome.tabs.create({ url: "https://websocket-devtools.com" });
-              }}
-              style={{
-                marginLeft: '8px',
-                padding: '2px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s ease',
-                border: '0px solid rgba(148, 163, 184, 0.2)',
-                background: 'rgba(71, 85, 105, 0.1)',
-                outline: 'none',
-              }}
-            >
-              <ExtensionIcon 
-                size={20}
-                // backgroundColor="rgba(71, 85, 105, 0.6)"
-                // primaryColor="#10b981"
-                // accentColor="#fbbf24"
-                // secondaryColor="#047857"
-              />
-            </button>
+            {hasProjectLink("homepage") && (
+              <button
+                className="extension-icon-panel"
+                onClick={() => {
+                  openProjectLink("homepage");
+                }}
+                style={{
+                  marginLeft: '8px',
+                  padding: '2px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease',
+                  border: '0px solid rgba(148, 163, 184, 0.2)',
+                  background: 'rgba(71, 85, 105, 0.1)',
+                  outline: 'none',
+                }}
+              >
+                <ExtensionIcon
+                  size={20}
+                  // backgroundColor="rgba(71, 85, 105, 0.6)"
+                  // primaryColor="#10b981"
+                  // accentColor="#fbbf24"
+                  // secondaryColor="#047857"
+                />
+              </button>
+            )}
           </div>
         </div>
 

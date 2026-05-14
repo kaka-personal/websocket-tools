@@ -2,10 +2,10 @@ import React from 'react';
 
 const ExtensionIcon = ({ 
   size = 512, 
-  backgroundColor = "#286a4d", 
-  primaryColor = "#eaf6eb", 
-  accentColor = "rgb(255 213 47)",
-  secondaryColor = "#dbba35",
+  backgroundColor = "#123447", 
+  primaryColor = "#eefbff", 
+  accentColor = "#58e1ff",
+  secondaryColor = "#119fc4",
   className = "",
   style = {},
   ...props 

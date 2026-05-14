@@ -1,3 +1,5 @@
+import { BRAND_NAME } from "../utils/branding.js";
+
 // DevTools main entry file
 
 // Check if extension is enabled
@@ -13,7 +15,7 @@ function checkExtensionEnabled() {
 checkExtensionEnabled().then((enabled) => {
   if (enabled) {
     chrome.devtools.panels.create(
-      "WebSocket DevTools",
+      BRAND_NAME,
       "icons/icon.svg", // Panel icon path - SVG for better Edge compatibility
       "src/devtools/panel.html",
       function (panel) {

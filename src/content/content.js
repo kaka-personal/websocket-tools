@@ -1,3 +1,5 @@
+import { BRAND_NAME } from "../utils/branding.js";
+
 // Content script - Bridges page and background script
 
 // Check if extension is enabled
@@ -493,7 +495,7 @@ function showDevToolsHint() {
   const textContainer = document.createElement("div");
   
   const titleDiv = document.createElement("div");
-  titleDiv.textContent = "WebSocket DevTools";
+  titleDiv.textContent = BRAND_NAME;
   Object.assign(titleDiv.style, {
     fontWeight: "700",
     fontSize: "16px",
@@ -502,7 +504,7 @@ function showDevToolsHint() {
   });
 
   const subtitleDiv = document.createElement("div");
-  subtitleDiv.textContent = "Ready to monitor";
+  subtitleDiv.textContent = "Ready to inspect traffic";
   Object.assign(subtitleDiv.style, {
     fontSize: "12px",
     color: "rgba(241, 245, 249, 0.7)"
@@ -557,7 +559,7 @@ function showDevToolsHint() {
   
   const lookText = document.createTextNode("Look for the ");
   const strongText = document.createElement("strong");
-  strongText.textContent = "WebSocket DevTools";
+  strongText.textContent = BRAND_NAME;
   strongText.style.color = "#10b981";
   const tabText = document.createTextNode(" tab to start monitoring connections");
   

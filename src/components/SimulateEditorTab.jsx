@@ -3,6 +3,7 @@ import JsonViewer from "./JsonViewer";
 import { CircleArrowDown, CircleArrowUp, Info, Github, Heart } from "lucide-react";
 import { Tooltip } from "@mantine/core";
 import { t } from "../utils/i18n";
+import { hasProjectLink, openProjectLink } from "../utils/projectLinks";
 
 // Session storage key for tracking button state within current session
 const SESSION_BUTTONS_SHOWN_KEY = 'websocket-devtools-session-buttons-shown';
@@ -43,6 +44,7 @@ const SimulateEditorTab = ({
 }) => {
   const isSimulateDisabled = !message.trim() || isSending;
   const animationTimeoutRef = useRef(null);
+  const hasAnimatedButtons = hasProjectLink("chromeStore") || hasProjectLink("repository");
   
   // Helper functions for storage access with error handling
   const getStorageValue = (storage, key, fallback = false) => {
@@ -70,9 +72,12 @@ const SimulateEditorTab = ({
   
   // Initialize button visibility state - only show if in current session and user hasn't clicked animated buttons before
   const getInitialButtonState = () => {
+    if (!hasAnimatedButtons) {
+      return false;
+    }
+
     const hasClicked = hasClickedAnimatedButtons();
     const inSession = isShownInSession();
-    console.log('Debug: hasClicked=', hasClicked, 'inSession=', inSession, 'shouldShow=', !hasClicked && inSession);
     return !hasClicked && inSession;
   };
   
@@ -114,21 +119,12 @@ const SimulateEditorTab = ({
 
   const handleGithubClick = () => {
     markButtonsAsClicked();
-    chrome.tabs.create({ url: "https://github.com/law-chain-hot/websocket-devtools" });
+    openProjectLink("repository");
   };
 
   const handleHeartClick = () => {
     markButtonsAsClicked();
-    chrome.tabs.create({ url: "https://chromewebstore.google.com/detail/websocket-devtools/fmnaobbfmjaaaebelkacpmmmpaaefbod" });
-  };
-
-  // Temporary debug function to reset all states
-  const resetAllStates = () => {
-    setStorageValue(localStorage, BUTTONS_CLICKED_KEY, false);
-    setStorageValue(sessionStorage, SESSION_BUTTONS_SHOWN_KEY, false);
-    setShowAnimatedButtons(false);
-    setAnimationCompleted(false);
-    console.log('All states reset');
+    openProjectLink("chromeStore");
   };
 
 
@@ -168,38 +164,42 @@ const SimulateEditorTab = ({
       </div>
       <div className="simulate-actions">
         {/* Animated buttons that appear on first simulate click */}
-        {showAnimatedButtons && (
+        {showAnimatedButtons && hasAnimatedButtons && (
           <div className={`simulate-animated-buttons ${animationCompleted ? 'animated' : ''}`}>
-            <Tooltip
-              label={t('simulate.animated.heartTooltip')}
-              arrowSize={6}
-              arrowOffset={12}
-              zIndex={1600}
-              hoverable
-              withinPortal={true}
-            >
-              <button
-                className="simulate-animated-btn heart-btn"
-                onClick={handleHeartClick}
+            {hasProjectLink("chromeStore") && (
+              <Tooltip
+                label={t('simulate.animated.heartTooltip')}
+                arrowSize={6}
+                arrowOffset={12}
+                zIndex={1600}
+                hoverable
+                withinPortal={true}
               >
-                <Heart size={14} />
-              </button>
-            </Tooltip>
-            <Tooltip
-              label={t('simulate.animated.githubTooltip')}
-              arrowSize={6}
-              arrowOffset={12}
-              zIndex={1600}
-              hoverable
-              withinPortal={true}
-            >
-              <button
-                className="simulate-animated-btn github-btn"
-                onClick={handleGithubClick}
+                <button
+                  className="simulate-animated-btn heart-btn"
+                  onClick={handleHeartClick}
+                >
+                  <Heart size={14} />
+                </button>
+              </Tooltip>
+            )}
+            {hasProjectLink("repository") && (
+              <Tooltip
+                label={t('simulate.animated.githubTooltip')}
+                arrowSize={6}
+                arrowOffset={12}
+                zIndex={1600}
+                hoverable
+                withinPortal={true}
               >
-                <Github size={14} />
-              </button>
-            </Tooltip>
+                <button
+                  className="simulate-animated-btn github-btn"
+                  onClick={handleGithubClick}
+                >
+                  <Github size={14} />
+                </button>
+              </Tooltip>
+            )}
           </div>
         )}
         

@@ -1,7 +1,7 @@
 {
-  "name": "websocket-devtools",
+  "name": "websocket-tool",
   "version": "1.0.6",
-  "description": "Professional debugging tool with real-time monitoring, message simulation, and traffic interception for developers",
+  "description": "Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "npm run clean && node scripts/generate-chrome-locales.js && vite build",
     "build:dev": "node scripts/generate-chrome-locales.js && vite build --mode development",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"const fs=require('fs'); fs.rmSync('dist', { recursive: true, force: true });\"",
     "i18n": "node scripts/generate-chrome-locales.js"
   },
   "keywords": [
@@ -27,20 +27,7 @@
     "message-simulation",
     "web-development"
   ],
-  "author": {
-    "name": "Brian Luo",
-    "email": "ianloe666@gmail.com",
-    "url": "https://github.com/law-chain-hot"
-  },
   "license": "MIT",
-  "homepage": "https://github.com/law-chain-hot/websocket-devtools#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/law-chain-hot/websocket-devtools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/law-chain-hot/websocket-devtools/issues"
-  },
   "packageManager": "pnpm@10.5.2",
   "engines": {
     "node": ">=16.0.0",
