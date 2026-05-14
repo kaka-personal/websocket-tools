@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { filterMessages } from "../utils/filterUtils";
+import { analyzeFilterPattern, filterMessages } from "../utils/filterUtils";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
 import { addFromMessageList } from "../utils/globalFavorites";
@@ -74,8 +74,87 @@ const MessageDetails = ({
   const [filterInvert, setFilterInvert] = useState(false); // Invert filter
   const [selectedMessageKey, setSelectedMessageKey] = useState(null); // Selected message
   const [copiedMessageKey, setCopiedMessageKey] = useState(null); // Copied message key
-  const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc' time sorting
   const [hoveredMessageKey, setHoveredMessageKey] = useState(null); // Hovered message key
+  const [filterHistory, setFilterHistory] = useState([]);
+  const [filterHistoryIndex, setFilterHistoryIndex] = useState(-1);
+  const [filterHistoryDraft, setFilterHistoryDraft] = useState("");
+  const searchInputRef = useRef(null);
+  const isNavigatingFilterHistoryRef = useRef(false);
+
+  const filterPattern = useMemo(() => analyzeFilterPattern(filterText), [filterText]);
+
+  const commitFilterHistory = (value) => {
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      setFilterHistoryIndex(-1);
+      setFilterHistoryDraft("");
+      return;
+    }
+
+    setFilterHistory((prevHistory) => {
+      const nextHistory = [
+        value,
+        ...prevHistory.filter((item) => item !== value),
+      ];
+      return nextHistory.slice(0, 20);
+    });
+    setFilterHistoryIndex(-1);
+    setFilterHistoryDraft("");
+  };
+
+  const handleFilterTextChange = (e) => {
+    isNavigatingFilterHistoryRef.current = false;
+    setFilterText(e.target.value);
+    if (filterHistoryIndex !== -1) {
+      setFilterHistoryIndex(-1);
+      setFilterHistoryDraft("");
+    }
+  };
+
+  const handleFilterInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      commitFilterHistory(filterText);
+      return;
+    }
+
+    if (filterHistory.length === 0) return;
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nextIndex =
+        filterHistoryIndex === -1
+          ? 0
+          : Math.min(filterHistoryIndex + 1, filterHistory.length - 1);
+
+      if (filterHistoryIndex === -1) {
+        setFilterHistoryDraft(filterText);
+      }
+
+      isNavigatingFilterHistoryRef.current = true;
+      setFilterHistoryIndex(nextIndex);
+      setFilterText(filterHistory[nextIndex]);
+      return;
+    }
+
+    if (e.key === "ArrowDown" && filterHistoryIndex !== -1) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (filterHistoryIndex === 0) {
+        isNavigatingFilterHistoryRef.current = true;
+        setFilterHistoryIndex(-1);
+        setFilterText(filterHistoryDraft);
+        return;
+      }
+
+      const nextIndex = filterHistoryIndex - 1;
+      isNavigatingFilterHistoryRef.current = true;
+      setFilterHistoryIndex(nextIndex);
+      setFilterText(filterHistory[nextIndex]);
+    }
+  };
 
   
   // Use new message highlight hook
@@ -90,11 +169,38 @@ const MessageDetails = ({
     clearHighlights();
   }, [selectedConnectionId, clearHighlights]);
 
+  useEffect(() => {
+    setFilterHistoryIndex(-1);
+    setFilterHistoryDraft("");
+  }, [selectedConnectionId]);
+
+  useEffect(() => {
+    if (isNavigatingFilterHistoryRef.current) {
+      isNavigatingFilterHistoryRef.current = false;
+      return;
+    }
+
+    const normalizedValue = filterText.trim();
+    if (!normalizedValue) return;
+
+    const timeoutId = setTimeout(() => {
+      commitFilterHistory(filterText);
+    }, 700);
+
+    return () => clearTimeout(timeoutId);
+  }, [filterText]);
+
   // Keyboard navigation for message selection
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Only handle arrow keys when we have connection and messages
       if (!connection || !connection.messages || connection.messages.length === 0) return;
+
+      const activeElement = document.activeElement;
+      const isSearchInputFocused =
+        activeElement === searchInputRef.current ||
+        activeElement?.closest?.(".filter-input-container");
+      if (isSearchInputFocused) return;
       
       // Calculate filtered and sorted messages inside the effect
       const filteredMessages = filterMessages(connection.messages, {
@@ -104,9 +210,7 @@ const MessageDetails = ({
       });
       
       const sortedMessages = [...filteredMessages].sort((a, b) => {
-        return sortOrder === "desc"
-          ? b.timestamp - a.timestamp
-          : a.timestamp - b.timestamp;
+        return a.timestamp - b.timestamp;
       });
       
       if (sortedMessages.length === 0) return;
@@ -165,7 +269,7 @@ const MessageDetails = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [connection, filterDirection, filterText, filterInvert, sortOrder, selectedMessageKey]);
+  }, [connection, filterDirection, filterText, filterInvert, selectedMessageKey]);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -198,9 +302,7 @@ const MessageDetails = ({
 
   // Sort messages
   const sortedMessages = [...filteredMessages].sort((a, b) => {
-    return sortOrder === "desc"
-      ? b.timestamp - a.timestamp
-      : a.timestamp - b.timestamp;
+    return a.timestamp - b.timestamp;
   });
 
   // formatMessage function has been moved to the JsonViewer component for internal handling
@@ -209,10 +311,6 @@ const MessageDetails = ({
     setSelectedMessageKey(
       selectedMessageKey === messageKey ? null : messageKey
     );
-  };
-
-  const handleSortToggle = () => {
-    setSortOrder(sortOrder === "desc" ? "asc" : "desc");
   };
 
   const truncateMessage = (message, maxLength = 120) => {
@@ -306,8 +404,11 @@ const MessageDetails = ({
   };
 
   const handleClearSearchFilter = () => {
+    isNavigatingFilterHistoryRef.current = false;
     setFilterText("");
     setFilterInvert(false);
+    setFilterHistoryIndex(-1);
+    setFilterHistoryDraft("");
   };
 
   const handleClearMessagesList = () => {
@@ -419,9 +520,12 @@ const MessageDetails = ({
                   <Search size={12} />
                 </span>
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={filterText}
-                  onChange={(e) => setFilterText(e.target.value)}
+                  onChange={handleFilterTextChange}
+                  onKeyDown={handleFilterInputKeyDown}
+                  onBlur={() => commitFilterHistory(filterText)}
                   placeholder={t("messageDetails.controls.filterPlaceholder")}
                 />
                 {filterText && (
@@ -445,6 +549,16 @@ const MessageDetails = ({
               <Ban size={14} />
             </button>
           </div>
+          {filterPattern.mode === "regex" && (
+            <div className="filter-feedback info">
+              {t("messageDetails.controls.regexMode")}
+            </div>
+          )}
+          {filterPattern.mode === "invalid-regex" && (
+            <div className="filter-feedback error">
+              {t("messageDetails.controls.invalidRegex")}: {filterPattern.error}
+            </div>
+          )}
         </div>
       </div>
 
@@ -466,9 +580,7 @@ const MessageDetails = ({
                     <tr>
                       <th className="col-data">{t("messageDetails.table.data")}</th>
                       <th className="col-length">{t("messageDetails.table.length")}</th>
-                      <th className="col-time" onClick={handleSortToggle} style={{ cursor: "pointer" }}>
-                        {t("messageDetails.table.time")} {sortOrder === "desc" ? "▼" : "▲"}
-                      </th>
+                      <th className="col-time">{t("messageDetails.table.time")}</th>
                     </tr>
                   </thead>
                   <tbody>

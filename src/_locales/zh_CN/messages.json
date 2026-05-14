@@ -791,6 +791,14 @@
     "message": "按文本内容筛选消息",
     "description": "Translation for messageDetails.controls.filterPlaceholder"
   },
+  "messageDetails_controls_regexMode": {
+    "message": "已启用正则模式，使用 /pattern/flags",
+    "description": "Translation for messageDetails.controls.regexMode"
+  },
+  "messageDetails_controls_invalidRegex": {
+    "message": "正则表达式无效",
+    "description": "Translation for messageDetails.controls.invalidRegex"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "清空所有消息",
     "description": "Translation for messageDetails.controls.clearMessages"

@@ -197,6 +197,8 @@
   "messageDetails.controls.receive": "Receive",
   "messageDetails.controls.invert": "Invert",
   "messageDetails.controls.filterPlaceholder": "Filter messages by text content",
+  "messageDetails.controls.regexMode": "Regex mode enabled. Use /pattern/flags",
+  "messageDetails.controls.invalidRegex": "Invalid regex",
   "messageDetails.controls.clearMessages": "Clear all messages",
   "messageDetails.table.data": "Data",
   "messageDetails.table.length": "Length",

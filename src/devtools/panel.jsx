@@ -8,6 +8,7 @@ import MessageDetails from "../components/MessageDetails.jsx";
 import FloatingSimulate from "../components/FloatingSimulate.jsx";
 import LanguageSelector from "../components/LanguageSelector.jsx";
 import ExtensionIcon from "../Icons/ExtensionIcon.jsx";
+import { BUILD_VERSION_TEXT, BUILD_VERSION_TITLE } from "../utils/buildInfo.js";
 import { t, addLanguageChangeListener, getCurrentLanguage, initForPanel } from "../utils/i18n.js";
 import i18n from "../utils/i18n.js";
 import "../styles/main.css";
@@ -693,6 +694,9 @@ const WebSocketPanel = () => {
             )}
           </div>
           <div className="panel-status">
+            <span className="build-version-badge" title={BUILD_VERSION_TITLE}>
+              {BUILD_VERSION_TEXT}
+            </span>
             <LanguageSelector />
             <button 
               className="extension-icon-panel"

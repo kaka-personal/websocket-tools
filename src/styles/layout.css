@@ -35,6 +35,23 @@
   gap: 8px;
 }
 
+.build-version-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 220px;
+  padding: 3px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(71, 85, 105, 0.12);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 主要内容区域 */
 .panel-content {
   flex: 1;
@@ -328,6 +345,10 @@
 @media (max-width: 480px) {
   .panel-header {
     padding: 8px 12px;
+  }
+
+  .build-version-badge {
+    max-width: 160px;
   }
 
   .panel-header h1 {

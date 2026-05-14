@@ -197,6 +197,8 @@
   "messageDetails_controls_receive": "messageDetails.controls.receive",
   "messageDetails_controls_invert": "messageDetails.controls.invert",
   "messageDetails_controls_filterPlaceholder": "messageDetails.controls.filterPlaceholder",
+  "messageDetails_controls_regexMode": "messageDetails.controls.regexMode",
+  "messageDetails_controls_invalidRegex": "messageDetails.controls.invalidRegex",
   "messageDetails_controls_clearMessages": "messageDetails.controls.clearMessages",
   "messageDetails_table_data": "messageDetails.table.data",
   "messageDetails_table_length": "messageDetails.table.length",

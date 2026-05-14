@@ -848,7 +848,7 @@
   content: none !important;
 }
 
-.mantine-Tabs-tabSection::after:where[data-active] {
+.mantine-Tabs-tabSection::after {
   display: none !important;
   border: none !important;
   content: none !important;

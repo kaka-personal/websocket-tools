@@ -791,6 +791,14 @@
     "message": "Filter messages by text content",
     "description": "Translation for messageDetails.controls.filterPlaceholder"
   },
+  "messageDetails_controls_regexMode": {
+    "message": "Regex mode enabled. Use /pattern/flags",
+    "description": "Translation for messageDetails.controls.regexMode"
+  },
+  "messageDetails_controls_invalidRegex": {
+    "message": "Invalid regex",
+    "description": "Translation for messageDetails.controls.invalidRegex"
+  },
   "messageDetails_controls_clearMessages": {
     "message": "Clear all messages",
     "description": "Translation for messageDetails.controls.clearMessages"
