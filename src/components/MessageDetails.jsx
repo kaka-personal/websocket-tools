@@ -397,9 +397,9 @@ const MessageDetails = ({
     }
   };
 
-  const formatJsonMessage = (message) => {
+  const getJsonViewPayload = (message) => {
     if (!message) {
-      return "";
+      return {};
     }
 
     const payload = {
@@ -422,20 +422,7 @@ const MessageDetails = ({
       };
     }
 
-    try {
-      return JSON.stringify(payload, null, 2);
-    } catch (error) {
-      return JSON.stringify(
-        {
-          messageId: message.messageId,
-          timestamp: formatExportTimestamp(message.timestamp),
-          type: message.type,
-          error: String(error),
-        },
-        null,
-        2
-      );
-    }
+    return payload;
   };
 
   const filteredMessages = useMemo(
@@ -1160,20 +1147,43 @@ const MessageDetails = ({
                       const isSelected = selectedMessageKey === messageKey;
                       const isNewMsg = isNewMessage(messageKey);
                       const isSystem = message.type !== "message";
+                      const side = isSystem
+                        ? "center"
+                        : message.direction === "outgoing"
+                        ? "right"
+                        : "left";
                       return (
                         <div
                           key={`${messageKey}-${index}`}
                           data-message-id={messageKey}
-                          className={`json-row ${message.direction || "system"} ${
+                          className={`json-row ${side} ${message.direction || "system"} ${
                             isSelected ? "selected" : ""
                           } ${isNewMsg ? "new-message" : ""} ${isSystem ? "system" : ""}`}
                           onClick={() => handleMessageClick(messageKey)}
                         >
                           <div className="json-row-meta">
                             <span className="json-time">{formatTimestamp(message.timestamp)}</span>
+                            <span className="json-direction">
+                              {message.direction === "outgoing"
+                                ? t("messageDetails.controls.send")
+                                : message.direction === "incoming"
+                                ? t("messageDetails.controls.receive")
+                                : message.type}
+                            </span>
                             <span className="json-length">{getMessageLength(message)}</span>
                           </div>
-                          <pre className="json-row-code">{formatJsonMessage(message)}</pre>
+                          <div className="json-row-viewer">
+                            <JsonViewer
+                              data={getJsonViewPayload(message)}
+                              className={`json-row-viewer-inner ${message.direction || "system"} ${
+                                isSystem ? "system" : ""
+                              }`}
+                              showControls={false}
+                              readOnly={true}
+                              enableWrap={true}
+                              enableNestedParse={false}
+                            />
+                          </div>
                         </div>
                       );
                     })}

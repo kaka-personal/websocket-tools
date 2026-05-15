@@ -1281,6 +1281,8 @@
   padding: 12px 14px;
 }
 .json-row {
+  width: fit-content;
+  min-width: min(100%, 680px);
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -1292,6 +1294,16 @@
 .json-row:hover {
   background: rgba(30, 41, 59, 0.9);
   transform: translateY(-1px);
+}
+.json-row.left {
+  align-self: flex-start;
+}
+.json-row.right {
+  align-self: flex-end;
+}
+.json-row.center {
+  align-self: center;
+  width: min(100%, 920px);
 }
 .json-row.selected {
   border-color: rgba(255, 255, 255, 0.35);
@@ -1316,25 +1328,49 @@
 }
 .json-row-meta {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   gap: 12px;
   margin-bottom: 8px;
   font-size: 10px;
   color: rgba(203, 213, 225, 0.62);
 }
 .json-time,
-.json-length {
+.json-length,
+.json-direction {
   white-space: nowrap;
 }
-.json-row-code {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
-  font-size: 11px;
-  line-height: 1.5;
-  color: rgba(226, 232, 240, 0.92);
+.json-direction {
+  color: rgba(148, 163, 184, 0.82);
 }
-.json-row.system .json-row-code {
-  color: rgba(254, 243, 199, 0.95);
+.json-row-viewer {
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(7, 10, 20, 0.35);
+}
+.json-row-viewer-inner {
+  width: 100%;
+}
+.json-row-viewer-inner .json-viewer {
+  border: none;
+  background: transparent;
+}
+.json-row-viewer-inner .json-viewer-controls {
+  display: none;
+}
+.json-row-viewer-inner .json-viewer-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.json-row-viewer-inner .cm-editor {
+  min-height: 140px;
+  max-height: 420px;
+}
+.json-row-viewer-inner.left .cm-editor {
+  border-left: 3px solid #34d399;
+}
+.json-row-viewer-inner.right .cm-editor {
+  border-left: 3px solid #60a5fa;
+}
+.json-row-viewer-inner.system .cm-editor {
+  border-left: 3px solid #fbbf24;
 }
