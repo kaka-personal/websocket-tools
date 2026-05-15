@@ -33,6 +33,9 @@ const WebSocketPanel = () => {
 
   // Message deduplication mechanism
   const processedMessageIds = useRef(new Set());
+  const devtoolsPortRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const isDisposedRef = useRef(false);
 
   // Language state for triggering re-renders when language changes
   const [currentLanguage, setCurrentLanguage] = useState(() => getCurrentLanguage());
@@ -52,15 +55,11 @@ const WebSocketPanel = () => {
   }, []);
 
   useEffect(() => {
+    isDisposedRef.current = false;
+
     // Get the tab ID that current DevTools is attached to
     const tabId = chrome.devtools.inspectedWindow.tabId;
     setCurrentTabId(tabId);
-
-    // === NEW: Establish persistent connection with background and send tabId ===
-    const port = chrome.runtime.connect({ name: "devtools" });
-    port.postMessage({ type: "init", tabId });
-    window._wsInspectorPort = port; // Keep global reference to prevent GC
-    // === END NEW ===
 
     // Request existing data
     const loadExistingData = async () => {
@@ -131,9 +130,6 @@ const WebSocketPanel = () => {
         console.error("❌ Failed to load existing data:", error);
       }
     };
-
-    // Load existing data
-    loadExistingData();
 
     // Listen to messages from background script
     const messageListener = (message, sender, sendResponse) => {
@@ -394,18 +390,71 @@ const WebSocketPanel = () => {
 
     chrome.runtime.onMessage.addListener(messageListener);
 
-    // Add port message listener for the connection established earlier
-    if (window._wsInspectorPort) {
-      window._wsInspectorPort.onMessage.addListener(messageListener);
-    }
+    const attachDevtoolsPort = () => {
+      if (isDisposedRef.current) return;
+
+      const port = chrome.runtime.connect({ name: "devtools" });
+      devtoolsPortRef.current = port;
+      window._wsInspectorPort = port; // Keep global reference to prevent GC
+
+      port.onMessage.addListener(messageListener);
+      port.postMessage({ type: "init", tabId });
+      loadExistingData();
+
+      port.onDisconnect.addListener(() => {
+        try {
+          port.onMessage.removeListener(messageListener);
+        } catch {
+          // ignore cleanup errors
+        }
+
+        if (window._wsInspectorPort === port) {
+          window._wsInspectorPort = null;
+        }
+        if (devtoolsPortRef.current === port) {
+          devtoolsPortRef.current = null;
+        }
+
+        if (isDisposedRef.current) {
+          return;
+        }
+
+        if (reconnectTimerRef.current) {
+          clearTimeout(reconnectTimerRef.current);
+        }
+
+        reconnectTimerRef.current = setTimeout(() => {
+          attachDevtoolsPort();
+        }, 1000);
+      });
+    };
+
+    attachDevtoolsPort();
 
     return () => {
+      isDisposedRef.current = true;
       chrome.runtime.onMessage.removeListener(messageListener);
-      if (window._wsInspectorPort) {
-        window._wsInspectorPort.onMessage.removeListener(messageListener);
-        // Clean up port reference
-        window._wsInspectorPort = null;
+
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
+
+      if (devtoolsPortRef.current) {
+        try {
+          devtoolsPortRef.current.onMessage.removeListener(messageListener);
+        } catch {
+          // ignore cleanup errors
+        }
+        try {
+          devtoolsPortRef.current.disconnect();
+        } catch {
+          // Ignore errors
+        }
+        devtoolsPortRef.current = null;
+      }
+
+      window._wsInspectorPort = null;
       
       // Clean up health check
       if (connectionHealthCheck) {
@@ -418,14 +467,6 @@ const WebSocketPanel = () => {
         connectionCheckInterval.current = null;
       }
       
-      // Clean up port connection
-      if (port) {
-        try {
-          port.disconnect();
-        } catch (error) {
-          // Ignore errors
-        }
-      }
     };
   }, []);
 

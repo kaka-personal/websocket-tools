@@ -9,6 +9,7 @@ import {
   Search,
   Settings,
   CircleX,
+  Copy,
   Download,
   Upload,
   Star,
@@ -397,32 +398,28 @@ const MessageDetails = ({
     }
   };
 
+  const getMessageSearchText = (message) => {
+    if (!message) return "";
+    const value = message.data ?? "";
+    if (typeof value === "string") {
+      return value;
+    }
+    if (value instanceof ArrayBuffer || value instanceof Uint8Array || value instanceof Blob) {
+      return normalizeMessageDataForExport(value) ? JSON.stringify(normalizeMessageDataForExport(value)) : "";
+    }
+    try {
+      return JSON.stringify(normalizeMessageDataForExport(value), null, 2);
+    } catch {
+      return String(value);
+    }
+  };
+
   const getJsonViewPayload = (message) => {
     if (!message) {
-      return {};
+      return "";
     }
 
-    const payload = {
-      messageId: message.messageId,
-      timestamp: formatExportTimestamp(message.timestamp),
-      type: message.type,
-      direction: message.direction ?? null,
-      simulated: Boolean(message.simulated),
-      blocked: Boolean(message.blocked),
-      url: message.url ?? null,
-      reason: message.reason ?? null,
-      data: normalizeMessageDataForExport(message.data),
-    };
-
-    if (message.isProtobuf) {
-      payload.protobuf = {
-        decoded: normalizeMessageDataForExport(message.protobufDecoded),
-        raw: normalizeMessageDataForExport(message.protobufRaw),
-        error: message.protobufError ?? null,
-      };
-    }
-
-    return payload;
+    return normalizeMessageDataForExport(message.data);
   };
 
   const filteredMessages = useMemo(
@@ -540,9 +537,12 @@ const MessageDetails = ({
 
   // Copy message content to clipboard
   const handleCopyMessage = async (messageData, messageKey) => {
+    const textToCopy =
+      typeof messageData === "string"
+        ? messageData
+        : JSON.stringify(normalizeMessageDataForExport(messageData), null, 2);
+
     try {
-      // messageData is now a formatted string (from JsonViewer)
-      const textToCopy = messageData;
       await navigator.clipboard.writeText(textToCopy);
       setCopiedMessageKey(messageKey);
       setTimeout(() => {
@@ -552,7 +552,7 @@ const MessageDetails = ({
       console.error("Failed to copy message:", error);
       try {
         const textArea = document.createElement("textarea");
-        textArea.value = messageData;
+        textArea.value = textToCopy;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand("copy");
@@ -1152,6 +1152,7 @@ const MessageDetails = ({
                         : message.direction === "outgoing"
                         ? "right"
                         : "left";
+                      const messageText = getMessageSearchText(message);
                       return (
                         <div
                           key={`${messageKey}-${index}`}
@@ -1171,6 +1172,32 @@ const MessageDetails = ({
                                 : message.type}
                             </span>
                             <span className="json-length">{getMessageLength(message)}</span>
+                            <div className="json-row-actions">
+                              <button
+                                type="button"
+                                className="json-row-action-btn"
+                                title="Search by this message"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setFilterText(messageText);
+                                  searchInputRef.current?.focus();
+                                  searchInputRef.current?.select?.();
+                                }}
+                              >
+                                <Search size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                className="json-row-action-btn"
+                                title={t("jsonViewer.controls.copy")}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleCopyMessage(message.data, messageKey);
+                                }}
+                              >
+                                <Copy size={12} />
+                              </button>
+                            </div>
                           </div>
                           <div className="json-row-viewer">
                             <JsonViewer
@@ -1224,8 +1251,7 @@ const MessageDetails = ({
                               </button>
                             </div> */}
                             <JsonViewer
-                              data={selectedMessage.data}
-                              message={selectedMessage}
+                              data={normalizeMessageDataForExport(selectedMessage.data)}
                               className="compact"
                               showControls={true}
                               onCopy={(data) => handleCopyMessage(data, messageKey)}
