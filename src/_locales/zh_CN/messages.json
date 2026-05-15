@@ -811,9 +811,21 @@
     "message": "删除当前筛选收藏",
     "description": "Translation for messageDetails.controls.deleteFilterFavorite"
   },
+  "messageDetails_controls_deleteFilterFavoriteConfirm": {
+    "message": "确定删除筛选收藏“{{name}}”吗？",
+    "description": "Translation for messageDetails.controls.deleteFilterFavoriteConfirm"
+  },
+  "messageDetails_controls_deleteFilterFavoriteConfirmFallback": {
+    "message": "确定删除这个筛选收藏吗？",
+    "description": "Translation for messageDetails.controls.deleteFilterFavoriteConfirmFallback"
+  },
   "messageDetails_controls_filterFavoriteName": {
     "message": "筛选收藏名称",
     "description": "Translation for messageDetails.controls.filterFavoriteName"
+  },
+  "messageDetails_controls_filterFavoriteDuplicate": {
+    "message": "筛选收藏已存在，不能重复保存",
+    "description": "Translation for messageDetails.controls.filterFavoriteDuplicate"
   },
   "messageDetails_controls_exportMessages": {
     "message": "导出所有消息",

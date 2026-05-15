@@ -15,6 +15,7 @@ import {
   Upload,
   Star,
   Trash2,
+  ChevronDown,
   Table as TableIcon,
   List as ListIcon,
   MessageSquare,
@@ -84,6 +85,7 @@ const MessageDetails = ({
   const [filterHistoryDraft, setFilterHistoryDraft] = useState("");
   const [filterPresets, setFilterPresets] = useState([]);
   const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
+  const [isFilterPresetMenuOpen, setIsFilterPresetMenuOpen] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [messageBlockSearches, setMessageBlockSearches] = useState({});
   const [viewMode, setViewMode] = useState(() => {
@@ -108,6 +110,7 @@ const MessageDetails = ({
   const importInputRef = useRef(null);
   const messagesTableContainerRef = useRef(null);
   const jsonEditorViewsRef = useRef(new Map());
+  const filterPresetMenuRef = useRef(null);
   const isNavigatingFilterHistoryRef = useRef(false);
   const isApplyingFilterPresetRef = useRef(false);
   const isNearBottomRef = useRef(true);
@@ -236,6 +239,35 @@ const MessageDetails = ({
   useEffect(() => {
     setFilterPresets(filterPresetsService.getPresets());
   }, []);
+
+  useEffect(() => {
+    if (!isFilterPresetMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event) => {
+      if (
+        filterPresetMenuRef.current &&
+        !filterPresetMenuRef.current.contains(event.target)
+      ) {
+        setIsFilterPresetMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsFilterPresetMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFilterPresetMenuOpen]);
 
   useEffect(() => {
     if (isApplyingFilterPresetRef.current) {
@@ -677,9 +709,7 @@ const MessageDetails = ({
   const handleSaveCurrentFilterPreset = () => {
     const presetName = window.prompt(
       t("messageDetails.controls.filterFavoriteName"),
-      selectedFilterPresetId
-        ? filterPresets.find((item) => item.id === selectedFilterPresetId)?.name || ""
-        : filterText.trim()
+      filterText.trim()
     );
 
     if (!presetName || !presetName.trim()) {
@@ -696,6 +726,7 @@ const MessageDetails = ({
     });
 
     if (!nextPreset) {
+      window.alert(t("messageDetails.controls.filterFavoriteDuplicate"));
       return;
     }
 
@@ -704,19 +735,13 @@ const MessageDetails = ({
     setSelectedFilterPresetId(nextPreset.id);
   };
 
-  const handleFilterPresetChange = (e) => {
-    const presetId = e.target.value;
-    setSelectedFilterPresetId(presetId);
-
-    if (!presetId) {
-      return;
-    }
-
+  const handleSelectFilterPreset = (presetId) => {
     const selectedPreset = filterPresets.find((item) => item.id === presetId);
     if (!selectedPreset) {
       return;
     }
 
+    setSelectedFilterPresetId(presetId);
     isApplyingFilterPresetRef.current = true;
     isNavigatingFilterHistoryRef.current = false;
     setFilterDirection(selectedPreset.filters.direction || "all");
@@ -724,20 +749,35 @@ const MessageDetails = ({
     setFilterInvert(Boolean(selectedPreset.filters.invert));
     setFilterHistoryIndex(-1);
     setFilterHistoryDraft("");
+    setIsFilterPresetMenuOpen(false);
   };
 
-  const handleDeleteFilterPreset = () => {
-    if (!selectedFilterPresetId) {
+  const handleDeleteFilterPresetItem = (presetId, event) => {
+    event.stopPropagation();
+
+    const targetPreset = filterPresets.find((item) => item.id === presetId);
+    const confirmed = window.confirm(
+      targetPreset
+        ? t("messageDetails.controls.deleteFilterFavoriteConfirm", {
+            name: targetPreset.name,
+          })
+        : t("messageDetails.controls.deleteFilterFavoriteConfirmFallback")
+    );
+
+    if (!confirmed) {
       return;
     }
 
-    const deleted = filterPresetsService.deletePreset(selectedFilterPresetId);
+    const deleted = filterPresetsService.deletePreset(presetId);
     if (!deleted) {
       return;
     }
 
     setFilterPresets(filterPresetsService.getPresets());
-    setSelectedFilterPresetId("");
+    if (selectedFilterPresetId === presetId) {
+      setSelectedFilterPresetId("");
+    }
+    setIsFilterPresetMenuOpen(false);
   };
 
   const handleExportMessages = () => {
@@ -937,17 +977,65 @@ const MessageDetails = ({
               <span className="checkmark"></span>
               <span className="checkbox-label">{t("messageDetails.controls.autoScroll")}</span>
             </label>
-            <div className="filter-controls filter-presets-select">
-              <select value={selectedFilterPresetId} onChange={handleFilterPresetChange}>
-                <option value="" disabled hidden>
-                  {t("messageDetails.controls.filterFavorites")}
-                </option>
-                {filterPresets.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name}
-                  </option>
-                ))}
-              </select>
+            <button
+              className="clear-messages-btn save-filter-btn"
+              onClick={handleSaveCurrentFilterPreset}
+              title={t("messageDetails.controls.saveFilterFavorite")}
+            >
+              <Star size={14} />
+            </button>
+            <div className="filter-presets-combo" ref={filterPresetMenuRef}>
+              <button
+                type="button"
+                className="filter-presets-toggle"
+                onClick={() => setIsFilterPresetMenuOpen((value) => !value)}
+                aria-haspopup="menu"
+                aria-expanded={isFilterPresetMenuOpen}
+                title={t("messageDetails.controls.filterFavorites")}
+              >
+                <span className="filter-presets-toggle-label">
+                  {filterPresets.find((preset) => preset.id === selectedFilterPresetId)?.name ||
+                    t("messageDetails.controls.filterFavorites")}
+                </span>
+                <ChevronDown size={12} />
+              </button>
+              {isFilterPresetMenuOpen && (
+                <div className="filter-presets-menu" role="menu">
+                  {filterPresets.length === 0 ? (
+                    <div className="filter-presets-empty">
+                      {t("messageDetails.controls.filterFavorites")}
+                    </div>
+                  ) : (
+                    filterPresets.map((preset) => (
+                      <div
+                        key={preset.id}
+                        className={`filter-presets-menu-item ${
+                          selectedFilterPresetId === preset.id ? "active" : ""
+                        }`}
+                        role="menuitem"
+                      >
+                        <button
+                          type="button"
+                          className="filter-presets-menu-item-label"
+                          onClick={() => handleSelectFilterPreset(preset.id)}
+                          title={preset.name}
+                        >
+                          <span className="filter-presets-menu-item-text">{preset.name}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="filter-presets-menu-item-delete"
+                          onClick={(event) => handleDeleteFilterPresetItem(preset.id, event)}
+                          title={t("messageDetails.controls.deleteFilterFavorite")}
+                          aria-label={t("messageDetails.controls.deleteFilterFavorite")}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
             <div className="view-mode-switcher" role="group" aria-label="View mode">
               <button
@@ -983,21 +1071,6 @@ const MessageDetails = ({
                 <Braces size={13} />
               </button>
             </div>
-            <button
-              className="clear-messages-btn save-filter-btn"
-              onClick={handleSaveCurrentFilterPreset}
-              title={t("messageDetails.controls.saveFilterFavorite")}
-            >
-              <Star size={14} />
-            </button>
-            <button
-              className="clear-messages-btn delete-filter-btn"
-              onClick={handleDeleteFilterPreset}
-              disabled={!selectedFilterPresetId}
-              title={t("messageDetails.controls.deleteFilterFavorite")}
-            >
-              <Trash2 size={14} />
-            </button>
             <button
               className="clear-messages-btn export-messages-btn"
               onClick={handleExportMessages}

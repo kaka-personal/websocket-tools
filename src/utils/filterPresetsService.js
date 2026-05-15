@@ -3,6 +3,10 @@ class FilterPresetsService {
     this.storageKey = "websocket-message-filter-presets";
   }
 
+  generatePresetId() {
+    return `filter_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
   getPresets() {
     try {
       const saved = localStorage.getItem(this.storageKey);
@@ -30,34 +34,41 @@ class FilterPresetsService {
       return null;
     }
 
-    const existingIndex = currentPresets.findIndex(
-      (item) => item.name.toLowerCase() === normalizedName.toLowerCase()
-    );
+    const normalizedNameKey = normalizedName.toLowerCase();
+    const normalizedDirection = preset.filters?.direction || "all";
+    const normalizedText = preset.filters?.text || "";
+    const normalizedInvert = Boolean(preset.filters?.invert);
+    const isDuplicate = currentPresets.some((item) => {
+      const itemName = (item.name || "").trim().toLowerCase();
+      const itemDirection = item.filters?.direction || "all";
+      const itemText = item.filters?.text || "";
+      const itemInvert = Boolean(item.filters?.invert);
+
+      return (
+        itemName === normalizedNameKey ||
+        (itemDirection === normalizedDirection &&
+          itemText === normalizedText &&
+          itemInvert === normalizedInvert)
+      );
+    });
+
+    if (isDuplicate) {
+      return null;
+    }
 
     const nextPreset = {
-      id:
-        existingIndex >= 0
-          ? currentPresets[existingIndex].id
-          : `filter_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      id: this.generatePresetId(),
       name: normalizedName,
       filters: {
-        direction: preset.filters?.direction || "all",
-        text: preset.filters?.text || "",
-        invert: Boolean(preset.filters?.invert),
+        direction: normalizedDirection,
+        text: normalizedText,
+        invert: normalizedInvert,
       },
       updatedAt: new Date().toISOString(),
-      createdAt:
-        existingIndex >= 0
-          ? currentPresets[existingIndex].createdAt
-          : new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
-    const nextPresets =
-      existingIndex >= 0
-        ? currentPresets.map((item, index) =>
-            index === existingIndex ? nextPreset : item
-          )
-        : [nextPreset, ...currentPresets].slice(0, 20);
+    const nextPresets = [nextPreset, ...currentPresets].slice(0, 20);
 
     if (!this.savePresets(nextPresets)) {
       return null;
