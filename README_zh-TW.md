@@ -1,6 +1,6 @@
 # websocket-tool
 
-這是 `websocket-tool` 的目前倉庫版本，定位是在 Chrome DevTools 中檢視、回放與控制 WebSocket 流量的除錯擴充套件。
+這是 `websocket-tool` 的目前倉庫版本,定位是在 Chrome DevTools 中以只讀方式檢視 WebSocket 流量的除錯擴充套件。
 
 目前主要說明文件請先參考 [README.md](/C:/Users/Administrator/Desktop/AI/_tmp_websocket_devtools/README.md)。
 

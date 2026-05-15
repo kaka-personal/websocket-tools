@@ -611,6 +611,11 @@
   background-color: #9ca3af;
 }
 
+.ws-connection-indicator-wrapper.connected .ws-connection-indicator-dot {
+  background-color: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+}
+
 .ws-connection-indicator-wrapper.new-message-indicator .ws-connection-indicator-dot {
   background-color: #10b981;
 }

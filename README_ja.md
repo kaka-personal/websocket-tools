@@ -1,6 +1,6 @@
 # websocket-tool
 
-このリポジトリは `websocket-tool` の現行版で、Chrome DevTools 内で WebSocket トラフィックを確認、再現、制御するための拡張機能です。
+このリポジトリは `websocket-tool` の現行版で、Chrome DevTools 内で WebSocket トラフィックを読み取り専用で確認するための拡張機能です。
 
 現時点の主な説明は [README.md](/C:/Users/Administrator/Desktop/AI/_tmp_websocket_devtools/README.md) を参照してください。
 

@@ -32,8 +32,6 @@ import {
   Edit,
   CheckCircle,
   SquareStack,
-  Star,
-  Send,
   Layers2,
   Check,
   Info
@@ -55,9 +53,6 @@ const JsonViewer = ({
   onChange = null,
   enableWrap = true,
   enableNestedParse = true,
-  onAddToFavorites = null,
-  showFavoritesButton = false,
-  onSimulate = null,
   // New props
   showNestedParseButton = true, // Control existing nested parse button
   showSimulateNestedParseButton = false, // Control button specifically for Simulate Message
@@ -355,13 +350,6 @@ const JsonViewer = ({
     document.body.removeChild(textArea);
   };
 
-  const handleAddToFavorites = () => {
-    if (onAddToFavorites) {
-      const favoriteData = getDisplayContent();
-      onAddToFavorites(favoriteData);
-    }
-  };
-
   const handleChange = useCallback(
     (value) => {
       if (onChange && !readOnly) {
@@ -586,17 +574,6 @@ const JsonViewer = ({
           <div className="json-viewer-controls-right">
             {/* Action buttons */}
             <div className="json-viewer-action-buttons">
-              {/* Simulate button */}
-              {onSimulate && (
-                <button
-                  onClick={() => onSimulate(getDisplayContent())}
-                  className="json-viewer-btn btn-simulate json-viewer-btn-inactive"
-                  title={t("jsonViewer.tooltips.simulate") || "Simulate this message"}
-                >
-                  <Send size={14} />
-                </button>
-              )}
-
               <button
                 onClick={handleCopyClick}
                 className={`json-viewer-btn btn-copy ${
@@ -611,15 +588,6 @@ const JsonViewer = ({
                 {isCopied ? <Check size={14} /> : <Copy size={14} />}
               </button>
 
-              {showFavoritesButton && onAddToFavorites && (
-                <button
-                  onClick={handleAddToFavorites}
-                  className="json-viewer-btn btn-favorite json-viewer-btn-inactive"
-                  title={t("jsonViewer.tooltips.addToFavorites")}
-                >
-                  <Star size={14} />
-                </button>
-              )}
             </div>
 
             {/* Divider if we have action buttons and status badges */}

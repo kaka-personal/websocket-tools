@@ -193,28 +193,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       );
       break;
 
-    case "block-outgoing":
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "block-outgoing",
-          enabled: message.enabled,
-        },
-        "*"
-      );
-      break;
-
-    case "block-incoming":
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "block-incoming",
-          enabled: message.enabled,
-        },
-        "*"
-      );
-      break;
-
     case "ignore-connection":
       window.postMessage(
         {
@@ -259,51 +237,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       );
       break;
 
-    case "simulate-message":
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "simulate-message",
-          connectionId: message.connectionId,
-          message: message.message,
-          direction: message.direction,
-        },
-        "*"
-      );
-      break;
-
-    case "simulate-system-event":
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "simulate-system-event",
-          connectionId: message.connectionId,
-          eventType: message.eventType,
-          code: message.code,
-          reason: message.reason,
-          message: message.message,
-          errorType: message.errorType,
-        },
-        "*"
-      );
-      break;
-
     case "show-devtools-hint":
       // Can display a temporary hint on the page
       showDevToolsHint();
       break;
 
-    case "create-manual-websocket":
-      // Forward to injected script to create WebSocket connection
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "create-manual-websocket",
-          url: message.url,
-        },
-        "*"
-      );
-      break;
     // NEW: Reset proxyState to initial value
     case "reset-proxy-state": {
       window.postMessage(

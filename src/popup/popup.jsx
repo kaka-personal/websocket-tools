@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import i18n, { t, initForPopup } from "../utils/i18n.js";
 import { BUILD_VERSION_TEXT, BUILD_VERSION_TITLE } from "../utils/buildInfo.js";
 import { PROJECT_LINKS, openProjectLink } from "../utils/projectLinks.js";
-import { Settings, Zap, Activity, Power, Wifi, MonitorSpeaker, MessageCircle, Send, Ban, SquareActivity, Home, Heart, Github } from "lucide-react";
+import { Settings, Zap, Activity, Power, Wifi, MonitorSpeaker, MessageCircle, SquareActivity, Home, Heart, Github } from "lucide-react";
 
 const Popup = () => {
   const [isEnabled, setIsEnabled] = useState(true);
@@ -194,30 +194,6 @@ const Popup = () => {
           <div style={styles.featureText}>
             <div style={styles.featureTitle}>{t("popup.features.proxy.title")}</div>
             <div style={styles.featureDesc}>{t("popup.features.proxy.desc")}</div>
-          </div>
-        </div>
-        <div 
-          className="feature-card"
-          style={styles.featureCard}
-        >
-          <div style={styles.featureIcon}>
-            <Send size={16} />
-          </div>
-          <div style={styles.featureText}>
-            <div style={styles.featureTitle}>{t("popup.features.simulate.title")}</div>
-            <div style={styles.featureDesc}>{t("popup.features.simulate.desc")}</div>
-          </div>
-        </div>
-        <div 
-          className="feature-card feature-card-with-bg"
-          style={styles.featureCard}
-        >
-          <div style={styles.featureIcon}>
-            <Ban size={16} />
-          </div>
-          <div style={styles.featureText}>
-            <div style={styles.featureTitle}>{t("popup.features.block.title")}</div>
-            <div style={styles.featureDesc}>{t("popup.features.block.desc")}</div>
           </div>
         </div>
       </div>

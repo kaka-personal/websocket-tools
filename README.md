@@ -3,9 +3,9 @@
 
   # websocket-tool
 
-  **Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools.**
+  **Inspect WebSocket traffic directly inside Chrome DevTools.**
 
-  A developer-focused toolbox for viewing live frames, simulating client/server messages, blocking noisy traffic, and reproducing real-time edge cases without touching application code.
+  A read-only developer panel for watching live frames, reviewing connection lifecycle, and filtering noisy streams — without touching application code.
 
   **English** | [简体中文](./README_zh-CN.md)
 </div>
@@ -17,10 +17,8 @@ Modern apps hide critical product logic behind WebSocket streams: chat, dashboar
 `websocket-tool` gives you a calmer workflow for debugging all of that:
 
 - inspect connection lifecycle and message history in one place
-- replay inbound or outbound payloads without changing your app
-- block send or receive traffic to reproduce race conditions and failures
-- create manual connections for focused debugging sessions
-- save frequently used payloads as favorites for faster iteration
+- filter, search, and group frames across noisy connections
+- import previously exported message logs for offline review
 - keep everything local in the browser with no required backend service
 
 ## Visual Tour
@@ -35,35 +33,11 @@ Modern apps hide critical product logic behind WebSocket streams: chat, dashboar
 
 Track active connections, inspect frame direction, and keep monitoring even when the flow gets noisy.
 
-### Traffic Blocking
-
-<img src="./ScreenShot/Gif/2-block-x.gif" alt="Traffic blocking demo" width="100%" />
-
-Pause the chaos when you need to reproduce broken states, dropped sends, or blocked receives.
-
-### Message Simulation
-
-<img src="./ScreenShot/Gif/3-simulation.gif" alt="Message simulation demo" width="100%" />
-
-Replay client-side and server-side payloads to verify protocol handling without waiting for the real backend to cooperate.
-
 ### JSON Parsing And Nested Editing
 
 <img src="./ScreenShot/Gif/4-JSON.gif" alt="JSON parsing and nested editing" width="100%" />
 
-Format payloads, inspect nested structures, and iterate on messages faster when debugging structured traffic.
-
-### Favorites And Reusable Payloads
-
-<img src="./ScreenShot/Gif/6-favorites.gif" alt="Favorites workflow" width="100%" />
-
-Store common payloads and replay them in a few clicks during repetitive testing cycles.
-
-### System Event Simulation
-
-<img src="./ScreenShot/Gif/7-system_event.gif" alt="System event simulation" width="100%" />
-
-Test disconnects, close codes, protocol failures, and other real-time edge cases without wiring up special backend logic.
+Format payloads and inspect nested structures when reviewing structured traffic.
 
 ## Feature Highlights
 
@@ -72,31 +46,19 @@ Test disconnects, close codes, protocol failures, and other real-time edge cases
 - watch WebSocket connections appear in real time
 - review connection lifecycle events alongside frame history
 - filter and search message data quickly
-
-### Replay
-
-- simulate send and receive directions independently
-- import payloads into the current connection
-- reuse saved favorites to speed up test cycles
-
-### Control
-
-- block outbound or inbound traffic selectively
-- reproduce broken sessions and interrupted flows
-- manually create connections for isolated debugging
+- save filter presets for repeated searches
 
 ### Stay Productive
 
 - built directly into DevTools
-- optimized for repeated debugging sessions
+- import previously exported frame logs for offline analysis
 - keeps data local to the browser
 
 ## Best Fit Use Cases
 
 - frontend debugging for chat, dashboards, streaming, and collaboration products
-- QA validation of reconnect, timeout, malformed payload, and race-condition scenarios
-- backend and protocol testing with repeatable client/server message playback
 - local investigation of noisy high-volume real-time systems
+- offline review of exported WebSocket traces
 
 ## Quick Start
 
@@ -104,7 +66,7 @@ Test disconnects, close codes, protocol failures, and other real-time edge cases
 2. Open any page that uses WebSockets.
 3. Press `F12` and open the `websocket-tool` tab.
 4. Select a connection from the left panel.
-5. Inspect messages, replay payloads, or block traffic as needed.
+5. Inspect frames, filter by content, and export when needed.
 
 ## Local Development
 

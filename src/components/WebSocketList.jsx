@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { CheckCircle, XCircle, Trash2, Plus, Activity, Loader, AppWindow, AlertTriangle, Ban, Play } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, Loader, AppWindow, AlertTriangle, Ban, Play } from "lucide-react";
 import { filterConnections } from "../utils/filterUtils";
 import useConnectionNewMessage from "../hooks/useConnectionNewMessage";
-import ManualConnectModal from "./ManualConnectModal";
 import "../styles/WebSocketList.css";
 import { t } from "../utils/i18n";
 
@@ -12,8 +11,6 @@ const WebSocketList = ({
   selectedConnectionId,
   onSelectConnection,
   onClearConnections,
-  onManualConnect, // New: manual connection callback
-  onSetConnectionClosing, // New: callback to set connection to closing status
   onIgnoreConnection, // New: ignore high-traffic connection
   onUnignoreConnection, // New: unignore connection
 }) => {
@@ -21,9 +18,6 @@ const WebSocketList = ({
   const [inactiveCollapsed, setInactiveCollapsed] = useState(false); // Inactive connections collapsed state
   const [filterText, setFilterText] = useState(""); // Connection filter text
   const [filterInvert, setFilterInvert] = useState(false); // Invert filter
-  
-  // Manual connection dialog state
-  const [isManualConnectOpen, setIsManualConnectOpen] = useState(false);
 
   // Use new message tracking hook
   const { hasNewMessages, getNewMessageTimestamp, clearNewMessage } = useConnectionNewMessage(
@@ -187,21 +181,6 @@ const WebSocketList = ({
       return t("panel.connectionList.status.disconnected");
     };
 
-    // Close connection
-    const handleCloseConnection = (e) => {
-      e.stopPropagation();
-      onSetConnectionClosing(connection.id);
-      chrome.runtime.sendMessage({
-        type: 'simulate-system-event',
-        data: {
-          eventType: 'client-close',
-          connectionId: connection.id,
-          code: 1000,
-          reason: 'Closed by user',
-        },
-      });
-    };
-
     // Ignore connection
     const handleIgnoreConnection = (e) => {
       e.stopPropagation();
@@ -259,6 +238,9 @@ const WebSocketList = ({
     // Helper function to get indicator wrapper class name
     const getIndicatorWrapperClassName = () => {
       let className = 'ws-connection-indicator-wrapper';
+      if (connection.status === 'open') {
+        className += ' connected';
+      }
       if (hasNewMsg) {
         className += ' new-message-indicator';
       }
@@ -332,18 +314,6 @@ const WebSocketList = ({
             )}
           </div>
 
-          {/* Top-right close button, only render when active, show on hover */}
-          {isActive && (
-            <button
-              className="ws-connection-close-btn"
-              onClick={handleCloseConnection}
-              title={t('panel.connectionList.tooltips.closeConnection')}
-              tabIndex={-1}
-              aria-label={t('panel.connectionList.tooltips.closeConnection')}
-            >
-              <XCircle size={14} color="#888" />
-            </button>
-          )}
         </div>
 
         <div className="ws-connection-url" title={connection.url}>
@@ -436,24 +406,6 @@ const WebSocketList = ({
         </div>
       </div>
 
-      {/* Manual Connection Action Bar */}
-      <div className="ws-manual-connection-bar">
-        <button
-          className="ws-add-connection-btn"
-          onClick={() => setIsManualConnectOpen(true)}
-        >
-          <Plus size={12} />
-          {t("panel.connectionList.addConnection")}
-        </button>
-      </div>
-
-      {/* Manual Connection Dialog */}
-      <ManualConnectModal
-        opened={isManualConnectOpen}
-        onClose={() => setIsManualConnectOpen(false)}
-        onConnect={onManualConnect}
-        iconComponent={Activity}
-      />
     </div>
   );
 };

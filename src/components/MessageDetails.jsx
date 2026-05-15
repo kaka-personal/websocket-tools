@@ -4,7 +4,6 @@ import { analyzeFilterFeedback, filterMessages } from "../utils/filterUtils";
 import filterPresetsService from "../utils/filterPresetsService";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
-import { addFromMessageList } from "../utils/globalFavorites";
 import {
   Ban,
   Search,
@@ -16,7 +15,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { t } from "../utils/i18n.js";
-import CheeseIcon from "../Icons/cheese.jsx";
 import ProtobufIcon from "../Icons/Protobuf.jsx";
 
 // SVG icon components
@@ -33,17 +31,6 @@ const Icons = {
   ),
   Connection: () => (
     < Settings size={12} />
-  ),
-  Simulate: () => (
-    <CheeseIcon width={14} height={14} color="black" spotColor="black"/>
-  ),
-  Simulate2: () => (
-    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M6 1L7.5 4H10.5L8.25 6L9 9L6 7.5L3 9L3.75 6L1.5 4H4.5L6 1Z"
-        fill="currentColor"
-      />
-    </svg>
   ),
   Block: () => (
     <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
@@ -74,11 +61,8 @@ const Icons = {
 const MessageDetails = ({
   connection,
   selectedConnectionId,
-  isIntercepting,
-  onSimulateMessage,
   onClearMessages,
   onImportMessages,
-  onOpenSimulatePanel,
 }) => {
   const [filterDirection, setFilterDirection] = useState("all"); // 'all' | 'outgoing' | 'incoming'
   const [filterText, setFilterText] = useState(""); // Message content filter
@@ -530,24 +514,6 @@ const MessageDetails = ({
     }
   };
 
-  // Add to favorites from JsonViewer (open Simulate panel's favorites tab)
-  const handleAddToFavoritesFromViewer = (data) => {
-    if (!data || !data.trim()) {
-      console.warn("Cannot add to favorites: data is empty");
-      return;
-    }
-
-    // Open SimulateMessagePanel's favorites tab and create new favorite
-    if (onOpenSimulatePanel) {
-      onOpenSimulatePanel({
-        tab: "favorites",
-        data: data,
-      });
-    } else {
-      console.warn("📋 MessageDetails: onOpenSimulatePanel not available");
-    }
-  };
-
   const handleClearSearchFilter = () => {
     isNavigatingFilterHistoryRef.current = false;
     setFilterText("");
@@ -748,18 +714,6 @@ const MessageDetails = ({
     const isSystemMessage = message.type !== "message";
     const tags = [];
 
-    if (message.simulated) {
-      tags.push(
-        <span
-          key="simulated"
-          className="message-tag simulated"
-          title={t("messageDetails.tooltips.simulatedMessage")}
-        >
-          <Icons.Simulate />
-          <span>{t("messageDetails.tags.simulate")}</span>
-        </span>
-      );
-    }
     if (message.blocked) {
       tags.push(
         <span
@@ -1070,24 +1024,7 @@ const MessageDetails = ({
                               copyButtonText="📋 Copy"
                               copiedText="✓ Copied"
                               isCopied={copiedMessageKey === messageKey}
-                              showFavoritesButton={true}
-                              onAddToFavorites={handleAddToFavoritesFromViewer}
-                              onSimulate={(data) => {
-                                if (onOpenSimulatePanel) {
-                                  onOpenSimulatePanel({
-                                    tab: "editor",
-                                    data: data,
-                                  });
-                                }
-                              }}
                             />
-                            {isIntercepting && (
-                              <div className="intercept-actions">
-                                <button className="action-btn edit">{t("messageDetails.actions.edit")}</button>
-                                <button className="action-btn allow">{t("messageDetails.actions.allow")}</button>
-                                <button className="action-btn block">{t("messageDetails.actions.block")}</button>
-                              </div>
-                            )}
                             {/* </div> */}
                           </>
                         );

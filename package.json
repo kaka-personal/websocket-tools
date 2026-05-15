@@ -1,6 +1,6 @@
 {
   "name": "websocket-tool",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Inspect, replay, and control WebSocket traffic directly inside Chrome DevTools",
   "type": "module",
   "main": "index.js",

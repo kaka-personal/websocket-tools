@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
-import ControlPanel from "../components/ControlPanel.jsx";
 import WebSocketList from "../components/WebSocketList.jsx";
 import MessageDetails from "../components/MessageDetails.jsx";
-import FloatingSimulate from "../components/FloatingSimulate.jsx";
 import LanguageSelector from "../components/LanguageSelector.jsx";
 import ExtensionIcon from "../Icons/ExtensionIcon.jsx";
 import { BUILD_VERSION_TEXT, BUILD_VERSION_TITLE } from "../utils/buildInfo.js";
@@ -13,7 +11,7 @@ import { t, addLanguageChangeListener, getCurrentLanguage, initForPanel } from "
 import i18n from "../utils/i18n.js";
 import { hasProjectLink, openProjectLink } from "../utils/projectLinks.js";
 import "../styles/main.css";
-import { Ban, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 // Performance configuration
 const MAX_MESSAGES_PER_CONNECTION = 5000; // Max messages retained per connection
@@ -22,10 +20,6 @@ const MAX_PROCESSED_IDS = 50000; // Max processed message IDs to retain
 
 const WebSocketPanel = () => {
   const [isMonitoring, setIsMonitoring] = useState(true);
-  const [blockStatus, setBlockStatus] = useState({
-    send: false,
-    receive: false
-  });
   const [websocketEvents, setWebsocketEvents] = useState([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
   const [currentTabId, setCurrentTabId] = useState(null);
@@ -39,9 +33,6 @@ const WebSocketPanel = () => {
 
   // Message deduplication mechanism
   const processedMessageIds = useRef(new Set());
-
-  // Ref for FloatingSimulate component
-  const floatingSimulateRef = useRef(null);
 
   // Language state for triggering re-renders when language changes
   const [currentLanguage, setCurrentLanguage] = useState(() => getCurrentLanguage());
@@ -179,11 +170,6 @@ const WebSocketPanel = () => {
           let newConnectionIdToSelect = null;
 
           validEvents.forEach(eventData => {
-            // Handle manual connection creation success event
-            if (eventData.type === "manual-connection-created") {
-               newConnectionIdToSelect = eventData.connectionId;
-            }
-
             if (eventData.type === "connection" || eventData.type === "open") {
               // Create or update connection to active status
               newConnections.set(eventData.id, {
@@ -277,14 +263,6 @@ const WebSocketPanel = () => {
         // Add to processed set
         if (messageId) {
           processedMessageIds.current.add(messageId);
-        }
-
-        // Handle manual connection creation success event
-        if (eventData.type === "manual-connection-created") {
-          // Delay to ensure connection event is processed
-          setTimeout(() => {
-            setSelectedConnectionId(eventData.connectionId);
-          }, 100);
         }
 
         // Handle circuit breaker triggered - show banner and update UI
@@ -451,40 +429,18 @@ const WebSocketPanel = () => {
     };
   }, []);
 
-  const handleStartMonitoring = () => {
+  const handleResumeMonitoring = () => {
     setIsMonitoring(true);
+    setCircuitBreakerTriggered(false);
+    setCircuitBreakerRate(0);
 
-    // Clear circuit breaker banner if showing
-    if (circuitBreakerTriggered) {
-      setCircuitBreakerTriggered(false);
-      setCircuitBreakerRate(0);
-    }
-
-    // Send start monitoring message to background script
     chrome.runtime
       .sendMessage({
         type: "start-monitoring",
         tabId: currentTabId,
       })
-      .then(() => {})
       .catch((error) => {
-        console.error("Failed to start monitoring:", error);
-      });
-  };
-
-  const handleStopMonitoring = () => {
-    setIsMonitoring(false);
-
-    // 发送停止监控消息到 background script
-    chrome.runtime
-      .sendMessage({
-        type: "stop-monitoring",
-        tabId: currentTabId,
-      })
-      .then((response) => {
-      })
-      .catch((error) => {
-        console.error("❌ Failed to stop monitoring:", error);
+        console.error("Failed to resume monitoring:", error);
       });
   };
 
@@ -504,55 +460,6 @@ const WebSocketPanel = () => {
 
   const handleSelectConnection = (connectionId) => {
     setSelectedConnectionId(connectionId);
-  };
-
-  // Generate unique message ID for simulated messages
-  const generateMessageId = () => {
-    return `msg_simulated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  };
-
-  const handleSimulateMessage = async ({
-    connectionId,
-    message,
-    direction,
-  }) => {
-
-    try {
-      // 1. Send simulate message to background (for actual simulation execution)
-      const response = await chrome.runtime.sendMessage({
-        type: "simulate-message",
-        data: {
-          connectionId,
-          message,
-          direction,
-          tabId: currentTabId, // Include current tab ID
-        },
-      });
-
-      // 2. Handle simulated message display directly within Panel
-      if (response && response.success) {
-        const connectionInfo = connectionsMap.get(connectionId);
-        const simulatedEvent = {
-          id: connectionId,
-          url: connectionInfo?.url || "Unknown",
-          type: "message",
-          data: message,
-          direction: direction,
-          timestamp: Date.now(),
-          status: connectionInfo?.status || "open",
-          simulated: true, // Mark as simulated message
-          messageId: generateMessageId(), // Add messageId for new message highlight
-        };
-
-        // Add directly to the event list
-        setWebsocketEvents((prevEvents) => [simulatedEvent, ...prevEvents]);
-
-      }
-
-      return response;
-    } catch (error) {
-      throw error;
-    }
   };
 
   const handleImportMessages = (connectionId, importedMessages) => {
@@ -631,102 +538,6 @@ const WebSocketPanel = () => {
     };
   };
 
-  // Handle opening SimulateMessagePanel
-  const handleOpenSimulatePanel = (options = {}) => {
-
-    if (floatingSimulateRef.current) {
-      floatingSimulateRef.current.openPanel(options);
-    } else {
-    }
-  };
-
-  // Handle manual WebSocket connection
-  const handleManualConnect = async (wsUrl) => {
-    
-    try {
-      // Set a Promise to wait for the manual-connection-created event
-      const connectionCreatedPromise = new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error("Connection creation timeout"));
-        }, 10000); // 10 second timeout
-
-        const listener = (message, sender, sendResponse) => {
-          if (message.type === "websocket-event" && 
-              message.data.type === "manual-connection-created" &&
-              message.data.url === wsUrl) {
-            clearTimeout(timeout);
-            chrome.runtime.onMessage.removeListener(listener);
-            resolve(message.data.connectionId);
-          } else if (message.type === "websocket-event" && 
-                     message.data.type === "manual-connection-error" &&
-                     message.data.url === wsUrl) {
-            clearTimeout(timeout);
-            chrome.runtime.onMessage.removeListener(listener);
-            reject(new Error(message.data.error || "Manual connection failed"));
-          }
-          
-          // Always respond to keep the message channel open
-          if (typeof sendResponse === 'function') {
-            sendResponse({ received: true });
-          }
-        };
-
-        chrome.runtime.onMessage.addListener(listener);
-      });
-
-      // Send message to background script to create WebSocket connection in current tab
-      const response = await chrome.runtime.sendMessage({
-        type: "create-manual-websocket",
-        data: {
-          url: wsUrl,
-          tabId: currentTabId,
-        },
-      });
-
-      if (response && response.success) {
-        // Wait for actual connection creation event
-        const connectionId = await connectionCreatedPromise;
-        return { success: true, connectionId };
-      } else {
-        throw new Error(response?.error || "Failed to create manual connection");
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Get block status display text
-  const getBlockStatusText = () => {
-    const { send, receive } = blockStatus;
-    if (!send && !receive) return null;
-    if (send && receive) return t("panel.header.block_all");
-    if (send) return t("panel.header.block_send");
-    if (receive) return t("panel.header.block_receive");
-  };
-
-  // Handle interception status change
-  const handleBlockChange = (type, enabled) => {
-    setBlockStatus(prev => ({
-      ...prev,
-      [type]: enabled
-    }));
-  };
-
-  // Set connection status to closing
-  const handleSetConnectionClosing = (connectionId) => {
-    setConnectionsMap((prevConnections) => {
-      const newConnections = new Map(prevConnections);
-      const existing = newConnections.get(connectionId);
-      if (existing) {
-        newConnections.set(connectionId, {
-          ...existing,
-          status: "closing",
-        });
-      }
-      return newConnections;
-    });
-  };
-
   const selectedConnection = getSelectedConnectionData();
 
   // Show loading while i18n initializes
@@ -736,20 +547,7 @@ const WebSocketPanel = () => {
     <MantineProvider>
       <div className="websocket-panel">
         <div className="panel-header">
-          <div className="panel-header-left">
-            {isMonitoring ? (
-              <span className="status active">{t("panel.header.status_active")}</span>
-            ) : (
-              <span className="status inactive">{t("panel.header.status_inactive")}</span>
-            )}
-
-            {isMonitoring && getBlockStatusText() && (
-              <span className="websocket-panel-block-status-label">
-                <Ban size={12} />
-                <span>{getBlockStatusText()}</span>
-              </span>
-            )}
-          </div>
+          <div className="panel-header-left" />
           <div className="panel-status">
             <span className="build-version-badge" title={BUILD_VERSION_TITLE}>
               {BUILD_VERSION_TEXT}
@@ -796,31 +594,23 @@ const WebSocketPanel = () => {
                   {t("panel.circuitBreaker.title") || "High Traffic Detected"}
                 </span>
                 <span className="traffic-pause-description">
-                  {t("panel.circuitBreaker.description", { rate: circuitBreakerRate }) ||
-                   `Monitoring stopped due to high traffic (${circuitBreakerRate} msg/s). Click Monitor to resume.`}
+                  {`Monitoring paused due to high traffic (${circuitBreakerRate} msg/s).`}
                 </span>
               </div>
+              <button
+                type="button"
+                className="traffic-pause-resume-btn"
+                onClick={handleResumeMonitoring}
+              >
+                Resume
+              </button>
             </div>
           </div>
         )}
 
         <div className="panel-content-fixed">
-          {/* 左侧固定宽度布局：ControlPanel + WebSocketList */}
+          {/* 左侧：WebSocketList */}
           <div className="panel-left-section-fixed">
-            <div className="control-panel-container-fixed">
-              <div className="panel-wrapper">
-                <div className="panel-body">
-                  <ControlPanel
-                    isMonitoring={isMonitoring}
-                    onStartMonitoring={handleStartMonitoring}
-                    onStopMonitoring={handleStopMonitoring}
-                    onBlockChange={handleBlockChange}
-                    currentTabId={currentTabId}
-                  />
-                </div>
-              </div>
-            </div>
-
             <div className="websocket-list-container-fixed">
               <div className="panel-wrapper">
                 <div className="panel-body">
@@ -830,8 +620,6 @@ const WebSocketPanel = () => {
                     selectedConnectionId={selectedConnectionId}
                     onSelectConnection={handleSelectConnection}
                     onClearConnections={handleClearConnections}
-                    onManualConnect={handleManualConnect}
-                    onSetConnectionClosing={handleSetConnectionClosing}
                   />
                 </div>
               </div>
@@ -846,24 +634,14 @@ const WebSocketPanel = () => {
               <div className="panel-body">
                 <MessageDetails
                   connection={selectedConnection}
-                  selectedConnectionId={selectedConnectionId} // 传递连接ID用于详情面板重新渲染
-                  onSimulateMessage={handleSimulateMessage}
+                  selectedConnectionId={selectedConnectionId}
                   onClearMessages={handleClearMessages}
                   onImportMessages={handleImportMessages}
-                  onOpenSimulatePanel={handleOpenSimulatePanel}
                 />
               </div>
             </div>
           </div>
         </div>
-
-        {/* 悬浮模拟消息窗口 */}
-        <FloatingSimulate
-          ref={floatingSimulateRef}
-          connection={selectedConnection}
-          onSimulateMessage={handleSimulateMessage}
-          onManualConnect={handleManualConnect}
-        />
       </div>
     </MantineProvider>
   );

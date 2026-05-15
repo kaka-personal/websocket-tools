@@ -112,22 +112,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     }
 
-    case "block-outgoing": {
-      if (tabId) {
-        notifyAllTabs("block-outgoing", { enabled: message.enabled }, tabId);
-      }
-      sendResponse({ success: true, blockOutgoing: message.enabled });
-      break;
-    }
-
-    case "block-incoming": {
-      if (tabId) {
-        notifyAllTabs("block-incoming", { enabled: message.enabled }, tabId);
-      }
-      sendResponse({ success: true, blockIncoming: message.enabled });
-      break;
-    }
-
     case "websocket-event": {
       // Ensure tabId is present
       if (!sender.tab?.id) {
@@ -194,40 +178,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Forward state change to DevTools Panel
       forwardToDevTools(message);
       sendResponse({ received: true });
-      break;
-    }
-
-    case "simulate-message": {
-      // If a tabId is specified, notify only that tab; otherwise, notify all tabs
-      const targetTabId = message.data.tabId || null;
-      notifyAllTabs("simulate-message", message.data, targetTabId);
-      sendResponse({ success: true, simulated: true });
-      break;
-    }
-
-    case "simulate-system-event": {
-      // Get current active tab ID (from devtools panel context)
-      const systemEventTabId = message.data.tabId || null;
-      notifyAllTabs("simulate-system-event", message.data, systemEventTabId);
-      sendResponse({ success: true, simulated: true, eventType: message.data.eventType });
-      break;
-    }
-
-    case "create-manual-websocket": {
-      // Notify content script of specific tab to create WebSocket connection
-      const tabId = message.data.tabId;
-      if (tabId) {
-        chrome.tabs.sendMessage(tabId, {
-          type: "create-manual-websocket",
-          url: message.data.url,
-        }).then(() => {
-          sendResponse({ success: true });
-        }).catch((error) => {
-          sendResponse({ success: false, error: error.message });
-        });
-      } else {
-        sendResponse({ success: false, error: "No tabId specified" });
-      }
       break;
     }
 
