@@ -1,6 +1,6 @@
 {
   "app_title": {
-    "message": "websocket-tool",
+    "message": "websocket-tools",
     "description": "Translation for app.title"
   },
   "app_description": {
@@ -36,7 +36,7 @@
     "description": "Translation for monitor.actions.resume"
   },
   "panel_header_title": {
-    "message": "websocket-tool",
+    "message": "websocket-tools",
     "description": "Translation for panel.header.title"
   },
   "panel_header_status_active": {
@@ -996,7 +996,7 @@
     "description": "Translation for common.selectAll"
   },
   "popup_title": {
-    "message": "websocket-tool",
+    "message": "websocket-tools",
     "description": "Translation for popup.title"
   },
   "popup_enableExtension": {
@@ -1024,7 +1024,7 @@
     "description": "Translation for popup.openDevTools"
   },
   "popup_devToolsHint": {
-    "message": "Press F12 → Find \"websocket-tool\" tab",
+    "message": "Press F12 → Find \"websocket-tools\" tab",
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
@@ -1072,7 +1072,7 @@
     "description": "Translation for popup.footer.homepage"
   },
   "popup_footer_support": {
-    "message": "Rate websocket-tool if it helped you",
+    "message": "Rate websocket-tools if it helped you",
     "description": "Translation for popup.footer.support"
   },
   "popup_footer_github": {
@@ -1084,11 +1084,11 @@
     "description": "Translation for system.closeEvent.notice"
   },
   "simulate_animated_heartTooltip": {
-    "message": "If websocket-tool helped, consider leaving a store rating.",
+    "message": "If websocket-tools helped, consider leaving a store rating.",
     "description": "Translation for simulate.animated.heartTooltip"
   },
   "simulate_animated_githubTooltip": {
-    "message": "Explore the websocket-tool project repository.",
+    "message": "Explore the websocket-tools project repository.",
     "description": "Translation for simulate.animated.githubTooltip"
   },
   "panel_trafficPause_title": {
@@ -1120,7 +1120,7 @@
     "description": "Translation for popup.features.inspect.desc"
   },
   "extensionName": {
-    "message": "websocket-tool",
+    "message": "websocket-tools",
     "description": "Extension name"
   },
   "extensionDescription": {
@@ -1128,7 +1128,7 @@
     "description": "Extension description"
   },
   "popupTitle": {
-    "message": "websocket-tool",
+    "message": "websocket-tools",
     "description": "Popup title"
   }
 }

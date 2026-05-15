@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="./ScreenShot/ScreenShot-long-quick-radius.png" alt="websocket-tool overview" width="92%" />
+  <img src="./ScreenShot/ScreenShot-long-quick-radius.png" alt="websocket-tools overview" width="92%" />
 
-  # websocket-tool
+  # websocket-tools
 
   **Inspect WebSocket traffic directly inside Chrome DevTools.**
 
@@ -10,11 +10,11 @@
   **English** | [简体中文](./README_zh-CN.md)
 </div>
 
-## Why websocket-tool
+## Why websocket-tools
 
 Modern apps hide critical product logic behind WebSocket streams: chat, dashboards, AI streaming, collaboration, telemetry, trading, notifications, and internal control channels.
 
-`websocket-tool` gives you a calmer workflow for debugging all of that:
+`websocket-tools` gives you a calmer workflow for debugging all of that:
 
 - inspect connection lifecycle and message history in one place
 - filter, search, and group frames across noisy connections
@@ -26,7 +26,7 @@ Modern apps hide critical product logic behind WebSocket streams: chat, dashboar
 
 ### Full Panel Overview
 
-<img src="./ScreenShot/ScreenShot-long.png" alt="Full websocket-tool panel" width="100%" />
+<img src="./ScreenShot/ScreenShot-long.png" alt="Full websocket-tools panel" width="100%" />
 
 ### Live Traffic Monitoring
 
@@ -65,7 +65,7 @@ Format payloads and inspect nested structures when reviewing structured traffic.
 
 1. Load the extension build into a Chromium browser.
 2. Open any page that uses WebSockets.
-3. Press `F12` and open the `websocket-tool` tab.
+3. Press `F12` and open the `websocket-tools` tab.
 4. Select a connection from the left panel.
 5. Inspect frames, filter by content, and export when needed.
 
@@ -92,4 +92,4 @@ The upstream MIT license notice is retained in this repository.
 
 ## License
 
-`websocket-tool` is distributed under the MIT license included in [LICENSE](./LICENSE).
+`websocket-tools` is distributed under the MIT license included in [LICENSE](./LICENSE).

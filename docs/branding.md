@@ -1,14 +1,14 @@
-# websocket-tool Branding
+# websocket-tools Branding
 
 ## Product Name
 
-- Primary name: `websocket-tool`
+- Primary name: `websocket-tools`
 - Category descriptor: `WebSocket Inspector`
 - Tagline: `Inspect WebSocket traffic directly inside Chrome DevTools.`
 
 ## Positioning
 
-websocket-tool is a developer-first debugging extension focused on three jobs:
+websocket-tools is a developer-first debugging extension focused on three jobs:
 
 - seeing every WebSocket frame in context
 - filtering and searching noisy traffic quickly
@@ -29,6 +29,6 @@ websocket-tool is a developer-first debugging extension focused on three jobs:
 
 ## Naming Rules
 
-- Use `websocket-tool` in UI titles, store copy, and docs
-- Use `websocket-tool` rather than `WebSocket DevTools` in visible labels
+- Use `websocket-tools` in UI titles, store copy, and docs
+- Use `websocket-tools` rather than `WebSocket DevTools` in visible labels
 - Keep upstream copyright only in `LICENSE`

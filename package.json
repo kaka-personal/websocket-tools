@@ -1,5 +1,5 @@
 {
-  "name": "websocket-tool",
+  "name": "websocket-tools",
   "version": "2.0.0",
   "description": "Inspect WebSocket traffic directly inside Chrome DevTools",
   "type": "module",

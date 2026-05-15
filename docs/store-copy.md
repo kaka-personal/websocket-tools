@@ -1,8 +1,8 @@
-# websocket-tool Store Copy
+# websocket-tools Store Copy
 
 ## Brand Summary
 
-- Product name: `websocket-tool`
+- Product name: `websocket-tools`
 - Tagline: `Inspect WebSocket traffic directly inside Chrome DevTools.`
 - Short positioning: `A Chrome DevTools extension for live WebSocket inspection and analysis.`
 
@@ -16,9 +16,9 @@ Trace live frames, filter noisy traffic, and keep reusable payloads close at han
 
 ## Full Description
 
-websocket-tool helps frontend engineers, backend engineers, QA, and protocol designers debug WebSocket behavior without leaving DevTools.
+websocket-tools helps frontend engineers, backend engineers, QA, and protocol designers debug WebSocket behavior without leaving DevTools.
 
-Use websocket-tool to:
+Use websocket-tools to:
 
 - inspect WebSocket connections and message history in one place
 - filter and search noisy traffic quickly
@@ -27,7 +27,7 @@ Use websocket-tool to:
 - save reusable filter presets for repeated searches
 - keep monitoring active while working through reconnect and refresh flows
 
-Why teams use websocket-tool:
+Why teams use websocket-tools:
 
 - faster reproduction of hard-to-catch real-time bugs
 - safer protocol testing without changing production code
@@ -42,13 +42,13 @@ Privacy notes:
 
 ## Chrome Web Store Fields
 
-- Name: `websocket-tool`
+- Name: `websocket-tools`
 - Summary: `WebSocket inspector and analysis console for Chrome DevTools`
 - Category suggestion: `Developer Tools`
 
 ## Edge Add-ons Fields
 
-- Name: `websocket-tool`
+- Name: `websocket-tools`
 - Short description: `Inspect WebSocket traffic in DevTools`
 
 ## Chinese Copy
@@ -63,7 +63,7 @@ Privacy notes:
 
 ### 详细介绍
 
-websocket-tool 是一个面向开发者的 WebSocket 调试扩展，帮助你在不离开 DevTools 的情况下完成连接观察、消息检索和问题复盘。
+websocket-tools 是一个面向开发者的 WebSocket 调试扩展，帮助你在不离开 DevTools 的情况下完成连接观察、消息检索和问题复盘。
 
 你可以用它来：
 

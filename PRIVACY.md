@@ -1,10 +1,10 @@
-# Privacy Policy for websocket-tool
+# Privacy Policy for websocket-tools
 
 **Last Updated: January 2025**
 
 ## Overview
 
-websocket-tool is a browser extension for Google Chrome and Microsoft Edge designed to help developers monitor, debug, and simulate WebSocket connections. We are committed to protecting your privacy and being transparent about our data practices.
+websocket-tools is a browser extension for Google Chrome and Microsoft Edge designed to help developers monitor, debug, and simulate WebSocket connections. We are committed to protecting your privacy and being transparent about our data practices.
 
 ## Data Collection and Processing
 
@@ -112,7 +112,7 @@ We may update this privacy policy to reflect changes in our practices or for leg
 
 ## Open Source Transparency
 
-websocket-tool is open source. You can review our code at:
+websocket-tools is open source. You can review our code at:
 - **GitHub Repository**: Replace this with the URL of your fork before publishing
 - **Code Audit**: All data processing logic is transparent and auditable
 
@@ -132,7 +132,7 @@ This extension is compatible with:
 
 ## Summary
 
-websocket-tool prioritizes your privacy by:
+websocket-tools prioritizes your privacy by:
 - Processing all data locally in your browser (Chrome/Edge)
 - Never transmitting data to external servers
 - Giving you full control over your debugging data

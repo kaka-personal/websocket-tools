@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "websocket-tool",
+  "name": "websocket-tools",
   "version": "2.0.0",
   "description": "Inspect WebSocket traffic directly inside Chrome DevTools",
   "default_locale": "en",
@@ -43,7 +43,7 @@
   ],
 
   "action": {
-    "default_title": "websocket-tool - Inspect and Replay WebSocket Traffic",
+    "default_title": "websocket-tools - Inspect and Replay WebSocket Traffic",
     "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "icons/icon-small.png",
