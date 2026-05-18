@@ -68,7 +68,6 @@ npm run build
 当前构建流程兼容 Windows，不依赖 `rm -rf`。
 
 
-品牌说明与命名规则见 [docs/branding.md](./docs/branding.md)。
 
 ## 上游说明
 
