@@ -1,6 +1,6 @@
 {
   "app_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tools",
     "description": "Translation for app.title"
   },
   "app_description": {
@@ -36,7 +36,7 @@
     "description": "Translation for monitor.actions.resume"
   },
   "panel_header_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tools",
     "description": "Translation for panel.header.title"
   },
   "panel_header_status_active": {
@@ -940,7 +940,7 @@
     "description": "Translation for common.selectAll"
   },
   "popup_title": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tools",
     "description": "Translation for popup.title"
   },
   "popup_enableExtension": {
@@ -968,7 +968,7 @@
     "description": "Translation for popup.openDevTools"
   },
   "popup_devToolsHint": {
-    "message": "F12キーを押して → \"WebSocket DevTools\"タブを見つける",
+    "message": "F12キーを押して → \"websocket-tools\"タブを見つける",
     "description": "Translation for popup.devToolsHint"
   },
   "popup_infoCard_title": {
@@ -1036,7 +1036,7 @@
     "description": "Translation for simulate.animated.githubTooltip"
   },
   "extensionName": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tools",
     "description": "Extension name"
   },
   "extensionDescription": {
@@ -1044,7 +1044,7 @@
     "description": "Extension description"
   },
   "popupTitle": {
-    "message": "WebSocket DevTools",
+    "message": "websocket-tools",
     "description": "Popup title"
   }
 }
