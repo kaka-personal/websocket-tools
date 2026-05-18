@@ -4,3 +4,4 @@ dist
 .npmrc
 .claude
 dist.zip
+websocket-tools-v*.zip
