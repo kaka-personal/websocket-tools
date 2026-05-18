@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="./ScreenShot/ScreenShot-long-quick-radius.png" alt="websocket-tools overview" width="92%" />
 
   # websocket-tools
 
@@ -24,19 +23,9 @@ Modern apps hide critical product logic behind WebSocket streams: chat, dashboar
 
 ## Visual Tour
 
-### Full Panel Overview
-
-<img src="./ScreenShot/ScreenShot-long.png" alt="Full websocket-tools panel" width="100%" />
-
-### Live Traffic Monitoring
-
-<img src="./ScreenShot/Gif/1-monitor-x.gif" alt="Live traffic monitoring" width="100%" />
-
-Track active connections, inspect frame direction, and keep monitoring even when the flow gets noisy.
-
-### JSON Parsing And Nested Editing
-
-<img src="./ScreenShot/Gif/4-JSON.gif" alt="JSON parsing and nested editing" width="100%" />
+<img src="./ScreenShot/1.png" alt="websocket-tools 完整面板" width="100%" />
+<img src="./ScreenShot/2.png" alt="websocket-tools 完整面板" width="100%" />
+<img src="./ScreenShot/3.png" alt="websocket-tools 完整面板" width="100%" />
 
 Format payloads and inspect nested structures when reviewing structured traffic.
 
@@ -78,11 +67,6 @@ npm run build
 
 The build flow is cross-platform and works on Windows without relying on `rm -rf`.
 
-## Store Assets
-
-Ready-to-publish store copy is available in [docs/store-copy.md](./docs/store-copy.md).
-
-Brand direction and naming notes are available in [docs/branding.md](./docs/branding.md).
 
 ## Upstream Attribution
 

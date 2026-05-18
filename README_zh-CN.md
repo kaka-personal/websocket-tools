@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="./ScreenShot/ScreenShot-long-quick-radius.png" alt="websocket-tools 总览" width="92%" />
 
   # websocket-tools
 
@@ -24,19 +23,9 @@
 
 ## 功能预览
 
-### 完整面板
-
-<img src="./ScreenShot/ScreenShot-long.png" alt="websocket-tools 完整面板" width="100%" />
-
-### 实时流量监控
-
-<img src="./ScreenShot/Gif/1-monitor-x.gif" alt="实时流量监控" width="100%" />
-
-实时查看连接、消息方向和消息历史，在高频流量场景下也能快速定位问题。
-
-### JSON 格式化
-
-<img src="./ScreenShot/Gif/4-JSON.gif" alt="JSON 格式化" width="100%" />
+<img src="./ScreenShot/1.png" alt="websocket-tools 完整面板" width="100%" />
+<img src="./ScreenShot/2.png" alt="websocket-tools 完整面板" width="100%" />
+<img src="./ScreenShot/3.png" alt="websocket-tools 完整面板" width="100%" />
 
 更方便地查看结构化消息、格式化 JSON，并辅助阅读嵌套字段。
 
@@ -78,9 +67,6 @@ npm run build
 
 当前构建流程兼容 Windows，不依赖 `rm -rf`。
 
-## 商店素材
-
-可直接使用的商店文案见 [docs/store-copy.md](./docs/store-copy.md)。
 
 品牌说明与命名规则见 [docs/branding.md](./docs/branding.md)。
 
