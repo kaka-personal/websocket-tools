@@ -31,18 +31,34 @@ Format payloads and inspect nested structures when reviewing structured traffic.
 
 ## Feature Highlights
 
-### Inspect
+### Connections & Messages
 
-- watch WebSocket connections appear in real time
+- watch every WebSocket connection on the page in real time
 - review connection lifecycle events alongside frame history
-- filter and search message data quickly
-- save filter presets for repeated searches
+- system events (open / close / error) get their own tab
+- clear messages for the current connection or wipe all connections
+- automatic circuit-breaker pause when message rate spikes, so the panel never floods
 
-### Stay Productive
+### Message Viewing
 
-- built directly into DevTools
-- import previously exported frame logs for offline analysis
-- keep data local to the browser
+- automatic JSON detection with collapsible / expandable tree view
+- nested JSON parsing — JSON embedded inside string payloads is still expandable
+
+### Search & Filter
+
+- full-text filter across message content
+- save the current filter as a named Filter Favorite and reuse it any time
+
+### Import & Export
+
+- one-click export of all messages for the current connection
+- import a previously exported log back into the current connection for offline review
+
+### Other
+
+- localized UI (English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch)
+- fully local — no backend service required
+- runs inside Chrome DevTools, no extra window needed
 
 ## Best Fit Use Cases
 
